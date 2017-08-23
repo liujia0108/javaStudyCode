@@ -1,0 +1,45 @@
+# $language = "Python"
+# $interface = "1.0"
+import pymysql, sys,datetime
+sqlState = ""
+
+def getSqlStatement(tableName, args):
+    global sqlState
+    if tableName == "factoryTime":
+        sqlState = "INSERT INTO factoryTime(date, avgtime,avgTime1,avgTime2,avgTime3, rom_version, manufactory, platform, screenModel, repeatTime,reporter) VALUES ('"\
+            + args[2] + "','" + args[3] + "','" + args[4] + "','" + args[5] + "','" + args[6] + "','" + args[7] + "','" + args[8] +"','" + args[9] +"','" + args[10] +"','" + args[11]+"','" + args[12] +"')"
+            
+    if tableName == "rebootTime":
+        sqlState = "INSERT INTO rebootTime(date, avgTime_stage1, avgTime_stage2, avgTime_stage3, rom_version, manufactory, platform, screenModel, repeatTime,reporter) VALUES ('"\
+            + args[2] + "','" + args[3] + "','" + args[4] + "','" + args[5] + "','" + args[6] + "','" + args[7] + "','" + args[8] + "','" + args[9] + "','" + args[10] +"','" + args[11] +"')"
+    
+    if tableName == "netConnTime":
+        sqlState = "INSERT INTO netConnTime(date, cableConnTime, wifiConnTime, rom_version, manufactory, platform, screenModel, repeatTime) VALUES ('"\
+            + args[2] + "','" + args[3] + "','" + args[4] + "','" + args[5] + "','" + args[6] + "','" + args[7] + "','" + args[8] + "','" + args[9] + "')"
+			
+    if tableName == "otaTime":
+        sqlState = "INSERT INTO otaTime(date, avgtime, rom_version, manufactory, platform, screenModel, repeatTime, reporter) VALUES ('"\
+            + args[2] + "','" + args[3] + "','" + args[4] + "','" + args[5] + "','" + args[6] + "','" + args[7] + "','" + args[8] + "','" + args[9] + "')"
+def excuteSql():
+    global sqlState
+    try:
+        conn=pymysql.connect(host='172.17.12.188',user='rom',passwd='nihao123!',db='tvromdb',port=3306)
+        cur=conn.cursor()
+        result = cur.execute(sqlState)
+        conn.commit()
+        cur.close()
+        conn.close()
+    except:
+        errorLogDir = "d:/crtScriptsRecord/"
+        if os.path.exists(errorLogDir) == False:
+            os.makedirs(errorLogDir)
+        errorLogPath = errorLogDir + "err_" + datetime.datetime.now() + ".txt"
+        errorFile = open(errorLogPath,'a')
+        errorFile.write("====db error,fail to update ote time to SQL ====")
+        errorFile.write(e.args[0], e.args[1]+'\n')
+        errorFile.close()
+        print ("pymysql Error %d: %s"% (e.args[0], e.args[1]))
+         
+if __name__ == '__main__':
+    getSqlStatement(sys.argv[1], sys.argv)
+    excuteSql()

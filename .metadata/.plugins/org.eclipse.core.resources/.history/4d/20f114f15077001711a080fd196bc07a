@@ -1,0 +1,168 @@
+# $language = "Python"
+# $interface = "1.0"
+import time,datetime,os
+
+def getNetworkConnectedTime():
+    connectedTime = "0"
+    crt.Screen.Send("reboot" + chr(13))
+    time.sleep(10)
+    for loop in range(0,5):
+        crt.Screen.Send("su" + chr(13))
+    crt.Screen.Send("echo '0' > /proc/sys/kernel/printk" + chr(13))
+    time.sleep(1)
+    crt.Screen.Send("su" + chr(13))
+    crt.Screen.Send("echo '0' > /proc/sys/kernel/printk" + chr(13))
+    time.sleep(2)
+    crt.Screen.Send("cat /proc/kmsg > /data/cc" + chr(13))
+    time.sleep(30)
+    crt.Screen.Send(chr(3))
+    time.sleep(2)
+    crt.Screen.Send("echo '0' > /proc/sys/kernel/printk" + chr(13))
+    crt.Screen.Send("clear" + chr(13))
+    time.sleep(2)
+    cmd1 = "grep " + "\"" + ".*\[.*\].*ehternet.*" + "\""
+    cmd2 = "   /data/cc | busybox  sed -n "
+    cmd3 = "\"" + "s/.*\[\(.*\)\] \[AN\] \[FUN\].*/\\1/p" + "\"" + " >/data/aa"
+    time.sleep(2)
+    cmd  = cmd1 + cmd2 + cmd3
+    crt.Screen.Send(cmd + chr(13))
+    time.sleep(2)
+    crt.Screen.Send("clear" + chr(13))
+    time.sleep(2)
+    crt.Screen.Send("$(cat /data/aa)" + chr(13))
+    time.sleep(3)
+    connectedTime = crt.Screen.Get2(2,0,2,50)
+    connectedTime = connectedTime.strip()
+    crt.Screen.Send(connectedTime + chr(13))
+    return connectedTime
+    
+repeatTime = 1
+timeSum = 0.0
+reporter = "liujia"
+manufactory = "fengxing"
+networkConnectedTime = 0.0
+networkTime = ""
+networkTimeSum = 0.0
+
+networkTime = getNetworkConnectedTime()
+crt.Screen.Send(networkTime + chr(13))
+networkTimeSum = networkTimeSum + float(networkTime)
+crt.Screen.Send(networkTimeSum + chr(13))
+
+crt.Screen.Send ("irlock 1\n")
+crt.Screen.Send ("su\n")
+crt.Screen.Send ("cd /" + chr(13))
+crt.Screen.Send ("setprop persist.logd.logpersistd logcatd\n")
+time.sleep(1)
+crt.Screen.Send ("echo '0' > /proc/sys/kernel/printk\n")
+time.sleep(1)
+crt.Screen.Send ("echo '0' > /proc/sys/kernel/printk\n")
+time.sleep(1)
+crt.Screen.Send ("clear\n")
+crt.Screen.Send ("ls /mnt/usb\n")
+time.sleep(0.5)
+paras1 = crt.Screen.Get2(2, 0, 2, 50)
+paras1 = paras1.strip()
+usbDiskName = paras1
+logcatPath = "/mnt/usb/" + str(paras1) + "/crtLogcat_ota/"
+screenPath = "/mnt/usb/" + str(paras1) + "/crtScreen_ota/"
+crt.Screen.Send ("mkdir " + logcatPath + "\n")
+crt.Screen.Send ("mkdir " + screenPath + "\n")
+time.sleep(5)
+crt.Screen.Send ("clear\n")
+time.sleep(1)
+crt.Screen.Send ("getprop |grep ro.build.version.incremental\n")
+time.sleep(1)
+paras1 = crt.Screen.Get2(1, 0, 30, 50 )
+rom_version = paras1[paras1.find("[ro.build.version.incremental]") + 30:]
+rom_version = rom_version[rom_version.find("[") + 1:rom_version.find("]")]
+
+crt.Screen.Send ("clear\n")
+time.sleep(1)
+crt.Screen.Send ("getprop |grep ro.product.screen.artmodel\n")
+time.sleep(1)
+paras2 = crt.Screen.Get2(1, 0, 30, 50 )
+screenModel = paras2[paras2.find("[ro.product.screen.artmodel]") + 30:]
+screenModel = screenModel[screenModel.find("[") + 1:]
+screenModel = screenModel[:screenModel.find("]")]
+
+crt.Screen.Send ("clear\n")
+time.sleep(1)
+crt.Screen.Send ("getprop |grep persist.sys.chiptype\n")
+time.sleep(1)
+paras3 = crt.Screen.Get2(1, 0, 30, 50 )
+platform = paras3[paras3.find("[persist.sys.chiptype]") + 10:]
+platform = platform[platform.find("[") + 1:]
+platform = platform[:platform.find("]")]
+
+fileDir = 'd:/crtScriptsRecord/' + platform + '/'
+if os.path.exists(fileDir) == False:
+    os.makedirs(fileDir)
+
+for i in range (repeatTime):
+    filePath = fileDir + 'getOTATime_' + rom_version + '.txt'
+    recordFile = open(filePath, 'a')
+    recordFile.write('===============start doing ota, time:' + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + '===============\n')
+    recordFile.write('== ' + str(i+1) + ' in ' + str(repeatTime) + ' ==\n')
+    recordFile.close()
+    crt.Screen.Send("echo '0' > /proc/sys/kernel/printk\n")
+    crt.Screen.Send ("mount -o remount /system\n") 
+    time.sleep(3)
+    crt.Screen.Send ("cp /mnt/usb/" + str(usbDiskName) + "/hosts /system/etc/" + chr(13))
+    time.sleep(3)
+    crt.Screen.Send ("the " + str(i + 1) + "th time for doing ota\n")
+    time.sleep(10)
+
+    crt.Screen.Send ("am start -n tv.fun.tvupgrade/.UpgradeActivity\n")
+    crt.Screen.Send ("logcat -v time | grep FXOS\n")
+    crt.Screen.WaitForString("product=FXOS,onDownloadFinish")
+    crt.Screen.Send(chr(3))
+    crt.Screen.Send("su" + chr(13))
+    crt.Screen.Send("rm -r /data/video/*" + chr(13))
+    time.sleep(1)
+    crt.Screen.Send("input keyevent 24\n")#send volume up in order to disturb screen saver
+    time.sleep(2)
+    crt.Screen.Send ("input keyevent 20\n")
+    timeStamp = str(datetime.datetime.now().strftime("%Y-%m-%d__%H-%M-%S"))
+    crt.Screen.Send(timeStamp + chr(13))
+    crt.Screen.Send ("mkdir " + logcatPath + timeStamp + "\n")
+    time.sleep(1)
+    crt.Screen.Send ("cp /sdcard/funtvlog/log.* &" + logcatPath + timeStamp + "\n")
+    time.sleep(3)
+    crt.Screen.Send ("screencap -p " + screenPath + timeStamp + "_" + str(i + 1) + ".png\n")
+    time.sleep(3)
+    #crt.Screen.Send("\x03")
+    crt.Screen.Send ("input keyevent 20\n")
+    crt.Screen.Send ("input keyevent 20\n")
+    crt.Screen.Send ("input keyevent 23\n")
+    crt.Screen.Send ("input keyevent 23\n")
+    starTime = datetime.datetime.now()
+
+    crt.Screen.WaitForString("[AN] [FUN] stopped : bootanim" )
+    endTime = datetime.datetime.now()
+    otaTime = float((endTime - starTime).seconds) + float((endTime - starTime).microseconds)/1000000
+    crt.Screen.Send ("irlock 1\n")
+    time.sleep(30)
+    crt.Screen.Send ("su\n")
+    crt.Screen.Send ("setprop persist.logd.logpersistd logcatd\n")
+    timeSum = timeSum + otaTime
+    recordFile = open(filePath, 'a')
+    recordFile.write(str(i + 1) + '\t' + str(otaTime) + '\n')
+    recordFile.close()
+    networkTime = getNetworkConnectedTime()
+    networkTimeSum = networkTimeSum + float(networkTime)
+
+    if otaTime > 300:
+        os.system("python sendEmail.py findbug timeTooLong")
+
+crt.Screen.Send ("irlock 0\n")
+date = str(datetime.datetime.now().strftime("%Y-%m-%d"))
+avgTime = str(timeSum/repeatTime)
+networkConnectedTime = str(networkTimeSum/repeatTime)
+os.system("python dbOperate.py otaTime " + str(date) + " " + avgTime + " " + rom_version + " " + manufactory + " " + platform + " " + screenModel + " " + str(repeatTime) + " " + reporter + " " + networkConnectedTime)
+
+time.sleep(10)	
+recordFile = open(filePath, 'a')
+recordFile.write('ave\t' + avgTime + '\n')
+recordFile.write('===============end doing ota:' + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + '===============\n\n\n\n')
+recordFile.close()

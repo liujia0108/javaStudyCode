@@ -1,0 +1,16 @@
+import java.util.Scanner;
+
+
+public class scholarship {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		Scanner scanner = new Scanner(System.in);
+		int N = Integer.parseInt(scanner.nextLine());
+		String a = scanner.nextLine();
+		String b[] = a.split(" ");
+		int length = b.length;
+		
+	}
+
+}

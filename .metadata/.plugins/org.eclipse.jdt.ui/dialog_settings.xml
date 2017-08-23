@@ -74,7 +74,7 @@
 		<item value="11" key="INCLUDE_MASK"/>
 		<section name="HISTORY0">
 			<item value="true" key="isCaseSensitive"/>
-			<item value="" key="javaElement"/>
+			<item value="=java_automator_test/src&lt;libs{SignalResouce.java[SignalResouce~FilterLog~QString;~QString;" key="javaElement"/>
 			<item value="0" key="scope"/>
 			<item value="11" key="includeMask"/>
 			<item value="libs.SignalResouce.FilterLog(String, String)" key="pattern"/>
