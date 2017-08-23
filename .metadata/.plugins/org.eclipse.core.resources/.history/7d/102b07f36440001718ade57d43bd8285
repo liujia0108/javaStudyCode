@@ -1,0 +1,30 @@
+package scripts.remotecontroller;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import android.util.Log;
+
+public class TestSomkeCase315 extends libs.OriginTestCase{
+
+	public void testSomkeCase315() throws IOException, InterruptedException {
+		Common.pressHome();
+		String currentPlatform = "";
+		currentPlatform = Common.getPlatform();
+		Log.d("liujia", "currentPlatform :"+currentPlatform);
+		if (currentPlatform.equalsIgnoreCase("938")) {
+			String XMLPath = "/data/system/users/0/settings_system.xml";
+			String xmlContent = "";
+			Common.do_exec("logcat -c");
+			Common.pressVolDown();
+			Common.pressVolUp();
+			String volumeLog = "";
+			volumeLog = Common.exec("logcat | grep 'update volume db'");
+			//xmlContent = Common.XMLreader(XMLPath);
+			Log.d("liujia", "volumeLog :"+volumeLog);
+		}
+	}
+}

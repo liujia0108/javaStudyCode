@@ -1,0 +1,208 @@
+package libs;
+
+import android.util.Log;
+
+import com.android.uiautomator.core.UiDevice;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiSelector;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.StreamCorruptedException;
+import java.security.PublicKey;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.android.uiautomator.core.UiCollection;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+public class filemanager extends UiAutomatorTestCase{
+	public static int execute_process(String shell_command) throws IOException, InterruptedException {
+		int shell_command_result = 1;
+		try {
+			Process execute_command = Runtime.getRuntime().exec(shell_command);
+			shell_command_result = execute_command.waitFor();
+			String s = "";
+			Log.d("liujia", s.valueOf(shell_command_result));
+			Log.d("liujia", "method:execute_process is passed!has return the result");
+		} catch (Exception e) {
+			Log.d("liujia", "method:execute_process is failed,check the system log");
+			System.out.println(e.toString());
+			// TODO: handle exception
+		}
+		return shell_command_result;//the result=0 indicates normal termination
+	}
+	
+	
+	public static void pass_log(String name,String case_number){
+		Log.d(name,case_number + "passed");
+		System.out.println(case_number + "passed");
+	}
+	
+	public static void fail_log(String name,String case_number){
+		Log.d(name,case_number + "failed,check log");
+		System.out.println(case_number + "failed,check log");
+	}
+	
+	public static String GetTitle(String ResId) throws UiObjectNotFoundException{
+		UiObject Title = new UiObject(new UiSelector().resourceId(ResId));
+		String CheckResult = Title.getText();
+		return CheckResult;
+	}
+	
+	public static boolean CheckTitle(String ResId) throws UiObjectNotFoundException {
+		UiObject title = new UiObject(new UiSelector().resourceId(ResId));
+		Log.d("liujia", title.getText());
+		boolean CheckResult = title.exists();
+		return CheckResult;
+	};
+	
+	public static String CheckSelected(String ResId,boolean status) throws UiObjectNotFoundException {
+		UiObject isSelected = new UiObject(new UiSelector().resourceId(ResId).selected(status));
+		String TabName = isSelected.getText();
+		return TabName;
+	}
+	
+	public static ArrayList<String> CompileLog() throws IOException, InterruptedException {
+		Log.d("liujia", "begin to clear logcat");
+		Process clear = Runtime.getRuntime().exec("logcat -c");
+		//clear.waitFor();
+		
+		Log.d("liujia", "begin to catch logcat");
+		Process GetLog = Runtime.getRuntime().exec("logcat -v time -d -s TAG");
+		try {
+			Thread.sleep(2000);
+		} catch (Exception e) {
+			Log.d("liujia", e.getMessage(), e);
+		}
+		
+		String format = ".*(\\[image player report\\])\\s+:\\s+(success)\\s+.*/(.*)]";
+		ArrayList<String> lst = new ArrayList<String>();
+		try {
+			Log.d("liujia", "begin to read logcat");
+			InputStream inputLog = GetLog.getInputStream();
+			//test
+			Log.d("liujia", "inputLog stream:"+inputLog.toString());
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputLog));
+			//compile
+			Log.d("liujia", "begin to match the logcat");
+			
+			if (reader.ready()) {
+				System.out.println("ready!!");
+				char[] buffer = new char[1024];
+				int readCount = reader.read(buffer);
+				Log.d("liujia","read out " + readCount + "chars");
+				if (readCount <= 0) {
+					Log.d("liujia","null!check image play tag!");
+					return lst;
+				}
+				Pattern pattern = Pattern.compile(format);
+				Matcher m = pattern.matcher(new String(buffer));
+				Log.d("liujia", "m matches result :" +Boolean.toString(m.matches()));
+				if (m.matches()) {
+					System.out.println("matched");
+					int c = m.groupCount();
+					Log.d("liujia", "group count c is:"+String.valueOf(c));
+					for (int i = 0; i < c; i++) {
+						System.out.println(i + ":" +m.group(i));
+						lst.add(m.group(i));;
+					}
+					//return lst;
+				} else {
+					Log.d("liujia","not matched!check image play tag!");
+				}
+			} else {
+				Log.d("liujia","not ready, block!check image play tag!");
+			}
+
+		} catch (Exception e) {
+			System.out.println(e.toString());// TODO: handle exception
+		}
+		return lst;
+		
+	}
+	
+	public void PressCenter(){
+		getUiDevice().pressDPadCenter();
+		sleep(2000);
+	}
+	public void PressLeft() {
+		getUiDevice().pressDPadLeft();
+		sleep(1000);
+	}
+	
+	public void PressRight() {
+		getUiDevice().pressDPadRight();
+		sleep(1000);
+	}
+	
+	public void PressUp() {
+		getUiDevice().pressDPadUp();
+		sleep(1000);
+	}
+	
+	public void PressDown() {
+		getUiDevice().pressDPadDown();
+		sleep(1000);
+		
+	}
+	
+	public void PressBack() {
+		getUiDevice().pressBack();
+		sleep(2000);
+	}
+	
+	
+	/*
+	public void image_player_report() throws IOException,InterruptedException{
+		try{
+			Process get_log = Runtime.getRuntime().exec("logcat -v time > /sdcard/11.txt");
+			StringBuilder log = new StringBuilder();
+			String line1 = null;
+			String log_line = "";
+			try {
+				InputStream log_stream = get_log.getInputStream();
+				BufferedReader reader1 = new BufferedReader(new InputStreamReader(log_stream));
+				do{
+					line1 = reader1.readLine();
+					Log.d("liujia","");
+				}
+				
+				while ((line1 = reader1.readLine()) != null) {
+					Log.i("liujia","line1 = " + line1);
+					result.append(line1 + "\n");
+					
+				}
+				Log.d("liujia", "!!compare result :" + result.toString());
+				result1 = result1 + result.toString();
+				Log.d("liujia", "!!String resutl1:" + result1);
+			} catch (Exception e) {
+				Log.d("liujia", "fail to compare file!case failed!");
+				Log.e("liujia", "fail to compare file!case failed!");
+				// TODO: handle exception
+			} finally {
+				compare.waitFor();
+				
+			}
+			
+		}
+		catch{
+			
+		}
+	}
+	*/
+
+}

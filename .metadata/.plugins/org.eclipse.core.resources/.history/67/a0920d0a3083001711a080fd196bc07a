@@ -1,0 +1,56 @@
+import java.util.Scanner;
+
+
+public class scholarship {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		
+		Scanner scanner = new Scanner(System.in);
+		int N = Integer.parseInt(scanner.nextLine());
+		String[][] array = new String[N][6];
+		String[][] finalScholarship = new String[N][3];
+		for (int i = 0; i < N && N >= 1 && N <= 100; i++) {
+			String detailLine = scanner.nextLine();
+			String[] b = detailLine.split(" ");
+			for (int j = 0; j < 6; j++) {
+				array[i][j] = b[j];
+				//System.out.println("i+j:" +i +"+" + j + ":" + array[i][j]);
+				
+			}
+			int sumPersonal = 0;
+			String name = array[i][0];
+			int finalGrade = Integer.parseInt(array[i][1]);
+			int classGrade = Integer.parseInt(array[i][2]);
+			String leader = array[i][3];
+			String west = array[i][4];
+			int thesis = Integer.parseInt(array[i][5]);
+			
+			if (finalGrade > 80 && thesis >= 1) {
+				sumPersonal = sumPersonal + 8000;
+			}
+			if (finalGrade > 85 && classGrade > 80) {
+				sumPersonal = sumPersonal + 4000;
+			}
+			if (finalGrade > 90) {
+				sumPersonal = sumPersonal + 2000;
+			}
+			if (finalGrade > 85 && west.equalsIgnoreCase("Y")) {
+				sumPersonal = sumPersonal + 1000;
+			}
+			if (classGrade > 80 && leader.equalsIgnoreCase("Y")) {
+				sumPersonal = sumPersonal +850;
+			}
+			String[] personalResult = null;
+			personalResult[0] = String.valueOf(i);
+			personalResult[1] = name;
+			personalResult[2] = String.valueOf(sumPersonal);
+			for (int p = 0; p < personalResult.length; p++) {
+				personalResult[p] = finalScholarship[i][p];
+				System.out.println("p:" + finalScholarship[i][p]);
+			}
+			
+		}
+	}
+
+}

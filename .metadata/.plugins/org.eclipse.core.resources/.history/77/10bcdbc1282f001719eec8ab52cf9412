@@ -1,0 +1,179 @@
+/*
+filemanager1-253：检查图片播放按钮功能
+测试步骤：
+1.通过点击遥控器向右按键，切换焦点到外接设备tab下
+
+2.点击左右按键切换选中图片分类文件夹，并点击进入内容页面
+
+3.选择任意图片文件夹下的单张图片文件，点击进入图片的加载，查看图片的正常显示以及图片播放器的功能按钮显示
+*/
+/*
+ filemanager1-1070:检查launcher顶部隐藏的U盘入口
+1.在launcher主页中点击两次向上按键，调出隐藏在顶部的显示菜单栏，查看U盘项的光标显示
+2.点击U盘选项，查看文件管理页面的正常打开以及当前tab的定位
+ */
+package scripts.filemanager;
+
+import libs.Common;
+import android.R.bool;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiSelector;
+
+import java.io.IOException;
+//import jave.io.FileNotFoundException;
+import java.util.ArrayList;
+
+public class case1_253 extends libs.OriginTestCase {
+	public void testCase() throws UiObjectNotFoundException,IOException,InterruptedException{
+		//uiautomator method must begin with the testxx()!!
+		Log.d("liujia", "start filemaner1-1070");
+		Process kill_processProcess = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		sleep(2000);
+		Common.pressHome(3000);
+		/*
+		try {
+			Process kill = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.toString());
+		}
+		*/
+		
+		//case1-1070
+		Common.pressDPadUp();
+		Common.pressDPadUp();
+		boolean UiCON = false;
+		boolean filemanagerTitile = false;
+		Log.d("liujia", Boolean.toString(libs.FileManager.CheckTitle(FunTV_Const.id.topTabForWeather)));
+		do {
+			Common.pressDPadLeft(2000);
+		} while (!libs.FileManager.CheckTitle(FunTV_Const.id.topTabForWeather));
+		Common.pressDPadRight("4");
+		UiCON = libs.FileManager.CheckTitle(FunTV_Const.id.topTabForStorage);
+		sleep(2000);
+		Log.d("liujia", "UiCON"+Boolean.toString(UiCON));
+		if (UiCON) {
+			Common.pressDPadCenter(2000);
+			filemanagerTitile = Common.isEnabled(FileManagerConst.id.filemanagerMainTitleId);
+			sleep(2000);
+			Log.d("liujia", "boolean filemanagerTitile :"+filemanagerTitile);
+			if (filemanagerTitile) {
+				libs.FileManager.pass_log("liujia", "1-1070");
+				//case 1-253
+				Log.d("liujia", "start filemaner 1-253");
+				Common.pressDPadDown();
+				Common.pressDPadRight();
+				Common.pressDPadDown();
+				String folder_title = "";
+				folder_title = libs.FileManager.CheckSelected(FileManagerConst.id.folderTabNameId,true);
+				Log.d("liujia", "folder_title :"+folder_title);
+				if (folder_title.equalsIgnoreCase("图片")) {
+					Common.pressDPadCenter(2000);
+					boolean FindPicture = false;
+					String name1 = "";
+					String name2 = "";
+					try {
+						while(!name1.equalsIgnoreCase(name2)) {
+							boolean imageFolderExist = Common.ifIdExists(FileManagerConst.id.imageFolderName);
+							Log.d("liujia", imageFolderExist);
+							if (imageFolderExist) {
+								name2 = libs.FileManager.CheckSelected(FileManagerConst.id.imageFolderName, true);
+								Log.d("liujia", "name2:"+name2);
+								//测试图片的外界U盘中一定要用测试的图片，其中文件夹的名称为下列两个之一：picture/resolution，如果没有则无法进行测试！请到共享文件夹中获取
+								if (name2.equalsIgnoreCase("picture")|| name2.equalsIgnoreCase("resolution")) {
+									Common.pressDPadCenter();
+									Common.pressDPadCenter();
+									String pic_name1 = "";
+									String pic_name = libs.FileManager.CheckSelected(FileManagerConst.id.fileNameId, true);
+									if(!pic_name1.equalsIgnoreCase(pic_name)){
+										ArrayList<String> files = new ArrayList<String>();
+										files.add("null");
+										Log.d("liujia", "pic_name1:" + pic_name1);
+										Log.d("liujia", "pic_name:" + pic_name);
+										Process clearLog = Runtime.getRuntime().exec("logcat -c");
+										sleep(3000);
+										clearLog.waitFor();
+										Log.d("liujia", "before play picture");
+										Common.pressDPadCenter();//display play button
+										Common.pressDPadCenter(2000);//play picture
+										Common.pressDPadCenter();//display play button
+										Common.pressDPadCenter();//suspend play
+										Log.d("liujia", "after play picture");
+										
+										ArrayList<String> imageAnalyse = libs.FileManager.CompileLog();
+										int b = imageAnalyse.size();
+										Log.d("liujia", "b size is: "+String.valueOf(b));
+										for (int j = 0; j < b; j++) {
+											Log.d("liujia", j + ":" +imageAnalyse.get(j).toString());
+										}
+										int p = b/4;
+										Log.d("liujia", "p:"+Integer.toBinaryString(p));
+										int q = 0;
+										if (p > 0) {
+											Log.d("liujia", "p>0 success,get into if!");
+											Log.d("liujia", "first q value:"+imageAnalyse.get(2+4*q));
+											while (q < p && (imageAnalyse.get(2+4*q).equalsIgnoreCase("error") || imageAnalyse.get(2+4*q).equalsIgnoreCase("success") || imageAnalyse.get(2+4*q).equalsIgnoreCase("fail"))) {
+												Log.d("liujia", "pq loop:"+imageAnalyse.get(2+4*q));
+												if (imageAnalyse.get(2+4*q).equalsIgnoreCase("success")) {
+													Log.d("liujia", "success image:"+imageAnalyse.get(2+4*q+1));
+													libs.FileManager.pass_log("liujia", "1-253" + imageAnalyse.get(2+4*q+1));
+												} else {
+													libs.FileManager.fail_log("liujia", "1-253" +imageAnalyse.get(2+4*q+1));
+
+												}
+												++q;
+												Log.d("liujia", "q:"+q);
+												break;
+											} 
+										}
+										sleep(2000);
+										/*
+										Common.pressBack();
+										Common.pressDPadRight(2000);
+										pic_name1 = pic_name;
+										pic_name = libs.FileManager.CheckSelected(FileManagerConst.id.fileNameId, true);
+			*/
+									}
+									Log.d("liujia", "test1");
+									Common.pressBack(2000);
+									Common.pressBack(2000);
+									
+								}
+								Common.pressDPadRight(2000);
+								name1 = name2;
+								name2 = libs.FileManager.CheckSelected(FileManagerConst.id.imageFolderName, true);
+								Log.d("liujia", "name1:"+name1);
+								Log.d("liujia", "name2:"+name2);
+							}
+							else {
+								Log.d("liujia", "there's no image in usb device!check test condition~");
+								tool.writeLog("there's no image in usb device!check test condition~");
+							}
+							
+						}
+						Log.d("liujia", "test3");
+						
+					} catch (Exception e) {
+						System.out.println(e.toString());
+					}
+				} else {
+					libs.FileManager.fail_log("liujia", "case1-253 failed to select");
+
+				}
+			} else {
+				libs.FileManager.fail_log("liujia", "1-1070");
+
+			}
+			
+		} else {
+			libs.FileManager.fail_log("liujia", "1-1070&1-253 isnot execute,for not USB devices!");
+
+		}
+		
+		
+	}
+
+}

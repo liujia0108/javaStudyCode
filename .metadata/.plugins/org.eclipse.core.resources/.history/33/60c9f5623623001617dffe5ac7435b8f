@@ -1,0 +1,139 @@
+package remotecontroller;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import android.R.integer;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+import libs.Common;
+import libs.RemoteController;
+
+public class TestCase330 extends libs.OriginTestCase{
+	public void testCase330() throws UiObjectNotFoundException, IOException, InterruptedException{
+		//case1-330,to check the time for 1.page switch 2.enter the app store
+		//through get page open time to judge if the enter button is valid
+		boolean movieOpenSuccess = false;
+		boolean tvplayOpenSuccess = false;
+		boolean appOpenSuccess = false;
+		Common.pressHome(2000);
+		Common.pressDPadDown(1000);
+		Common.pressDPadCenter(2000);//enter to movie type
+		Common.pressDPadDown(1000);
+		Common.pressDPadCenter(5000);//get the open time for detail page 
+		Map<String, ArrayList<String>> map1 = RemoteController.usedTime();
+		ArrayList<String> startList= map1.get("startList");
+		ArrayList<String> stopList = map1.get("stopList");
+		int startCount = startList.size();
+		int stopCount = stopList.size();
+		Log.d("liujia", "stopCount:" +stopCount);
+		if (startCount > 0 && stopCount > 0) {
+			for (int i = 0; i < startCount; i++) {
+				Log.d("liujia", "startList: " +startList.get(i));
+			}
+			for (int j = 0; j < stopCount; j++) {
+				Log.d("liujia", "stopList: " +stopList.get(j));
+			}
+			if (startList.get(1).equalsIgnoreCase(stopList.get(1)) && startList.get(2).equalsIgnoreCase(stopList.get(2))) {
+				Log.d("liujia", "go on to caculate usedtime: ");
+				Log.d("liujia", startList.get(3));
+				Log.d("liujia", stopList.get(3));
+				Log.d("liujia", "start_string to int:" + Long.parseLong(startList.get(3)));
+				Long openTime = Long.parseLong(stopList.get(3)) - Long.parseLong(startList.get(3));
+				Log.d("liujia", "usedtime : "+String.valueOf(openTime));
+				movieOpenSuccess = true;
+			} else {
+				Log.d("liujia", "datail page open failed,can not get performance log");
+
+			}
+		} else {
+			boolean movieNameExist = false;
+			movieNameExist = RemoteController.resIdExist("com.bestv.ott:id/detail_title");
+			if (movieNameExist) {
+				movieOpenSuccess = true;
+			}
+		}
+		
+		//open tv play
+		Common.pressHome(3000);
+		Common.pressDPadDown(2000);
+		Common.pressDPadRight();
+		Common.pressDPadCenter(3000);
+		Common.pressDPadDown();
+		Common.pressDPadCenter(3000);//open on tv play
+		Map<String, ArrayList<String>> map2 = RemoteController.usedTime();
+		ArrayList<String> startList1 = map2.get("startList");
+		ArrayList<String> stopList1 = map2.get("stopList");
+		int startCount1 = startList1.size();
+		int stopCount1 = stopList1.size();
+		if (startCount1 > 0 && stopCount1 > 0) {
+			for (int a = 0; a < startCount1; a++) {
+				Log.d("liujia", "startList1: " +a + " " +startList1.get(a));
+			}
+			for (int b = 0; b < stopCount1; b++) {
+				Log.d("liujia", "stopList1: " +b +" " + stopList1.get(b));
+			}
+			if (startList1.get(1).equalsIgnoreCase(stopList1.get(1)) && startList1.get(2).equalsIgnoreCase(stopList1.get(2))) {
+				Long tvOpenTime = Long.parseLong(stopList1.get(3)) - Long.parseLong(startList1.get(3));
+				Log.d("liujia", "tvopen time : "+tvOpenTime);
+				tvplayOpenSuccess = true;
+			} else {
+				Log.d("liujia", "TV play page open failed,can not get performance log");
+
+			}
+		} else {
+			boolean TVPlayNameExist = false;
+			TVPlayNameExist = RemoteController.resIdExist("com.bestv.ott:id/detail_title");
+			if (TVPlayNameExist) {
+				tvplayOpenSuccess = true;
+			}
+		}
+		
+		
+		//open app store
+		Common.pressHome(3000);
+		Common.pressDPadUp();
+		Common.pressDPadRight();
+		Common.pressDPadRight();
+		Common.pressDPadDown();
+		Common.pressDPadDown();
+		Common.pressDPadCenter(3000);
+		Map<String, ArrayList<String>> map3 = RemoteController.usedTime();
+		ArrayList<String> startList2 = map3.get("startList");
+		ArrayList<String> stopList2 = map3.get("stopList");
+		int startCount2 = startList2.size();
+		int stopCount2 = stopList2.size();
+		if (startCount2 > 0  && stopCount2 > 0) {
+			if (startList2.get(1).equalsIgnoreCase(stopList2.get(1)) && startList2.get(2).equalsIgnoreCase(stopList2.get(2))) {
+				Long appOpenTime = Long.parseLong(stopList2.get(3)) - Long.parseLong(startList2.get(3));
+				Log.d("liujia", "app open time:" +appOpenTime);
+				appOpenSuccess = true;
+			} else {
+				Log.d("liujia", "app store open failed,can not get performance log");
+			}
+		} else {
+			boolean appStore = false;
+			appStore = RemoteController.resIdExist("tv.fun.appstore:id/column_title", true);
+			if (appStore) {
+				appOpenSuccess = true;
+			}
+		}
+		
+		
+		if (tvplayOpenSuccess && movieOpenSuccess && appOpenSuccess) {
+			Log.d("liujia", "case1-330 passed!");
+			System.out.println("case1-330 passed!");
+		} else {
+			Log.d("liujia", "case1-330 failed!");
+			System.out.println("case1-330 failed!");
+		}
+		
+	}
+
+}

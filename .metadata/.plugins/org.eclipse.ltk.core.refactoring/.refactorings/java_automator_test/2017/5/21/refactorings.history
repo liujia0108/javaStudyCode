@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;java_automator_test/src/scripts/remotecontroller/SmokeCase1_315.java&apos; to &apos;TestCase320.java&apos;" description="Rename resource &apos;SmokeCase1_315.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/scripts/remotecontroller/SmokeCase1_315.java" name="TestCase320.java" stamp="1495532507566" updateReferences="true"/>
+</session>

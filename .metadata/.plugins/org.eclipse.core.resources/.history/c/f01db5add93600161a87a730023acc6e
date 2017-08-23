@@ -1,0 +1,81 @@
+package filemanager;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import libs.FileManager;
+import android.util.Log;
+import libs.Common;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+public class case1_1072 extends libs.OriginTestCase {
+	public void testCase1072() throws UiObjectNotFoundException, IOException,
+			InterruptedException {
+		Process KillFilemanager = Runtime.getRuntime().exec(
+				"am force-stop tv.fun.filemanager");
+		//KillFilemanager.waitFor();
+		Log.d("liujia", "start to test filemanager1-1072");
+		Common.pressHome(3000);
+		Runtime.getRuntime().exec(
+				"am start -n tv.fun.filemanager/.FunFileManagerActivity");
+		sleep(3000);
+		Common.pressDPadRight(1000);
+		Common.pressDPadDown();
+		Common.pressDPadDown();
+		Common.pressDPadRight();
+		Common.pressDPadCenter(3000);// open image type
+		String FolderName1 = FileManager.CheckSelected(
+				"tv.fun.filemanager:id/item_folder_name", true);
+		Log.d("liujia", "image folder:" + FolderName1);
+		getUiDevice().pressDPadCenter();// open image folder
+		sleep(2000);
+		int i = 0;
+		String FileName1 = "";
+		ArrayList<String> list = new ArrayList<String>();
+		while (FileManager.CheckTitle("tv.fun.filemanager:id/item_name")) {
+			String FileName2 = FileManager.CheckSelected(
+					"tv.fun.filemanager:id/item_name", true);
+			if (!FileName1.equalsIgnoreCase(FileName2)) {
+				i = i + 1;// account image file
+				list.add(FileName2);
+				FileName1 = FileName2;
+				getUiDevice().pressDPadRight();
+				sleep(1000);
+			} else {
+				Log.d("liujia", "image num: " + i);
+				int ListNum = list.size();
+				Log.d("liujia", Integer.toString(ListNum));
+				break;
+
+			}
+		}
+		int result = 0;
+
+		for (int j = i - 1; j >= 0; j--) {
+			getUiDevice().pressDPadCenter();// play on picture
+			sleep(2000);
+			String name3 = FileManager
+					.GetTitle("tv.fun.filemanager:id/image_name_display");
+			if (name3.equalsIgnoreCase(list.get(j))) {
+				result = result + 1;
+				sleep(3000);
+				getUiDevice().pressDPadLeft();
+				sleep(1000);
+			} else {
+				FileManager.fail_log("liujia", "case1-1072");
+
+			}
+
+		}
+		if (result == i) {
+			FileManager.pass_log("liujia", "case1-1072");
+		} else {
+			FileManager.fail_log("liujia", "case1-1072");
+
+		}
+
+	}
+
+}

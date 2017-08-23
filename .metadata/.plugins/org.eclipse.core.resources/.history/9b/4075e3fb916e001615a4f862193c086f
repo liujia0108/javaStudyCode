@@ -1,0 +1,17 @@
+package scripts.signalsources;
+
+import java.io.IOException;
+
+import android.util.Log;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+
+import libs.Common;
+import libs.OriginTestCase;
+import libs.SignalResouce;
+import constant.*;
+
+public class signalTest extends libs.OriginTestCase{
+	public void testSignal() throws IOException, InterruptedException, UiObjectNotFoundException {
+	}
+}

@@ -1,0 +1,51 @@
+package scripts.settings;
+
+/*
+【用例名称】：【点亮】进入关于查看版本信息
+ *【测试步骤】：
+ *1.关于->S版本信息（包含_s）
+ *【期望结果】：
+ *1.正常进入关于页面，系统版本信息包含_s
+* */
+import java.io.IOException;
+
+import android.util.Log;
+import constant.RemoteControllerConst;
+import libs.Common;
+import libs.FunTV;
+import libs.RemoteController;
+
+public class TestCase1477 extends libs.OriginTestCase{
+
+    public void testCase1477() throws IOException, InterruptedException{
+
+        tool.writeLog("测试步骤1.关于->版本信息");
+        FunTV.openApp("ABOUT");
+        Settings.checkAboutViewOpen();
+        tool.writeLog("期望结果1.正常进入关于页面，显系统版本信息包含_s");
+        String compileCondition = ".*ro.build.version.incremental\\s*\\=\\s*(\\d.*.*).*";
+		String cmd1 = "busybox vi /system/build.prop";
+		String compileResult = null;
+		Log.d("liujia","before compile!!!");
+		compileResult = Common.compileLog(compileCondition, cmd1);
+		Log.d("liujia","compile result: "+compileResult);
+		if (compileResult==null) {
+			Common.writeBug("case1-1477 failed!");
+		}
+		else{
+			Log.d("liujia","compile result is null!!");
+			String str1 = compileResult;
+			CharSequence cs1 = "_s";	        
+			// string contains the specified sequence of char values
+			boolean retval = str1.contains(cs1);
+			System.out.println("Method returns : " + retval);
+			if (retval==true) {
+				Common.writeBug("case1-1477 passed!");
+			} else {
+				Log.d("liujia","case result: "+ retval);
+				Common.writeBug("case1-1477 failed!");
+			}
+		}
+    }
+   
+}

@@ -1,0 +1,187 @@
+/*
+filemanager1-253：检查图片播放按钮功能
+测试步骤：
+1.通过点击遥控器向右按键，切换焦点到外接设备tab下
+
+2.点击左右按键切换选中图片分类文件夹，并点击进入内容页面
+
+3.选择任意图片文件夹下的单张图片文件，点击进入图片的加载，查看图片的正常显示以及图片播放器的功能按钮显示
+*/
+/*
+ filemanager1-1070:检查launcher顶部隐藏的U盘入口
+1.在launcher主页中点击两次向上按键，调出隐藏在顶部的显示菜单栏，查看U盘项的光标显示
+2.点击U盘选项，查看文件管理页面的正常打开以及当前tab的定位
+ */
+package filemanager;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import android.media.Image;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiDevice;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiScrollable;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+import libs.Common;
+import libs.FileManager;
+import android.util.Log;
+
+import java.io.IOException;
+//import jave.io.FileNotFoundException;
+
+public class case1_253 extends libs.OriginTestCase {
+	public void testCase() throws UiObjectNotFoundException,IOException,InterruptedException{
+		//uiautomator method must begin with the testxx()!!
+		Log.d("liujia", "start filemaner1-1070");
+		Process kill_processProcess = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		sleep(2000);
+		Common.pressHome(3000);
+		/*
+		try {
+			Process kill = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.toString());
+		}
+		*/
+		
+		//case1-1070
+		Common.pressDPadUp(2000);
+		Common.pressDPadUp(2000);
+		boolean UiCON = false;
+		do {
+			Common.pressDPadLeft(2000);
+		} while (FileManager.CheckTitle("com.bestv.ott:id/weather"));
+		UiCON = FileManager.CheckTitle("com.bestv.ott:id/weather");
+		if (UiCON) {
+			Common.pressDPadRight(2000);
+			Common.pressDPadCenter(2000);
+			boolean filemanagerTitile = FileManager.CheckTitle("tv.fun.filemanager:id/activity_fun_fm_tab");
+			//20160606,case1-1070 failed becauseof the filemanager modify the tab resourceid
+			if (filemanagerTitile) {
+				FileManager.pass_log("liujia", "1-1070");
+			} else {
+				FileManager.fail_log("liujia", "1-1070");
+
+			}
+			
+		} else {
+			FileManager.fail_log("liujia", "1-1070 top-bar can not access!");
+
+		}
+		
+		//case 1-253
+		Log.d("liujia", "start filemaner 1-253");
+		Common.pressDPadDown();
+		Common.pressDPadRight();
+		Common.pressDPadDown();
+		String folder_title = FileManager.CheckSelected("tv.fun.filemanager:id/entity_name",true);
+		sleep(2000);
+		if (folder_title.equalsIgnoreCase("图片")) {
+			Common.pressDPadCenter(2000);
+			boolean FindPicture = false;
+			String name1 = "";
+			String name2 = FileManager.CheckSelected("tv.fun.filemanager:id/item_folder_name", true);
+			try {
+				//String folder_name = filemanager.CheckSelected("tv.fun.filemanager:id/item_folder_name", true);
+				while(!name1.equalsIgnoreCase(name2)) {
+					
+					if (name2.equalsIgnoreCase("picture")|| name2.equalsIgnoreCase("resolution")) {
+						Common.pressDPadCenter(2000);
+						String pic_name1 = "";
+						String pic_name = FileManager.CheckSelected("tv.fun.filemanager:id/item_name", true);
+						sleep(2000);
+						while(!pic_name1.equalsIgnoreCase(pic_name)){
+							ArrayList<String> files = new ArrayList<String>();
+							files.add("null");
+							Log.d("liujia", "pic_name1:" + pic_name1);
+							Log.d("liujia", "pic_name:" + pic_name);
+							Process clearLog = Runtime.getRuntime().exec("logcat -c");
+							sleep(2000);
+							clearLog.waitFor();
+							Log.d("liujia", "before play picture");
+							Common.pressDPadCenter(10000);//play picture
+							Log.d("liujia", "after play picture");
+							//check log
+							//filemanager.CompileLog();
+							
+							ArrayList<String> imageAnalyse = FileManager.CompileLog();
+							int b = imageAnalyse.size();
+							Log.d("liujia", "b size is: "+String.valueOf(b));
+							for (int j = 0; j < b; j++) {
+								Log.d("liujia", j + ":" +imageAnalyse.get(j).toString());
+							}
+							// success/fail
+							// file name
+							if (b != 0) {
+								if (imageAnalyse.get(1).equalsIgnoreCase("error") || imageAnalyse.get(1).equalsIgnoreCase("success") || imageAnalyse.get(1).equalsIgnoreCase("fail")) {
+									if (imageAnalyse.get(1).equalsIgnoreCase("success")) {
+										FileManager.pass_log("liujia", "1-253" + imageAnalyse.get(2));
+									} else {
+										FileManager.fail_log("liujia", "1-253");
+
+									}
+									String filename_formate = ".+\\/(.+.png).*";
+									if (files.contains(imageAnalyse.get(3))) {
+										/*
+										if (!imageAnalyse.get(3).equalsIgnoreCase("null")) {
+											Pattern pattern1 = Pattern .compile(filename_formate);
+											Matcher m1 = pattern1.matcher(imageAnalyse.get(3));
+											Log.d("liujia", "m1 match:"+Boolean.toString(m1.matches()));
+											if (m1.matches()) {
+												int d = m1.groupCount();
+												for (int z = 0; z <= d; z++) {
+													Log.d("liujia", z + ":" + m1.group(z));
+													
+												}
+											}
+										}*/
+										
+										break;
+									} else {
+										files.add(imageAnalyse.get(3));
+									}
+								} 
+							}
+							sleep(2000);
+							Common.pressBack();
+							Common.pressDPadRight(2000);
+							pic_name1 = pic_name;
+							pic_name = FileManager.CheckSelected("tv.fun.filemanager:id/item_name", true);
+
+						}
+						Log.d("liujia", "test1");
+						Common.pressBack(2000);
+						Common.pressBack(2000);
+						
+					}
+					Log.d("liujia", "test2");
+					Common.pressDPadRight(2000);
+					name1 = name2;
+					name2 = FileManager.CheckSelected("tv.fun.filemanager:id/item_folder_name", true);
+					Log.d("liujia", "name1:"+name1);
+					Log.d("liujia", "name2:"+name2);
+					
+					
+				}
+				Log.d("liujia", "test3");
+				
+			} catch (Exception e) {
+				System.out.println(e.toString());
+			}
+		} else {
+			FileManager.fail_log("liujia", "case1-253 failed to select");
+
+		}
+		
+		
+	}
+
+}

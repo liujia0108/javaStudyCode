@@ -1,0 +1,255 @@
+/*-----------------------testcase 1-259、1-260、1-261、1-263-----------------------------
+ 预置条件：
+1.U盘中的文件夹只有Video、Photo、Music这三个文件夹
+2.U盘Photo文件夹中的图片最后两张为非gif格式可旋转的图片
+3.U盘已插入TV
+
+操作步骤：
+1.进入文件管理
+2.点击遥控器左右按键切换焦点到图片tab
+3.选择任意包含有图片文件夹，加载全部的图片缩略图，查看缩略图的正常显示
+4.点击最后一张图片进行查看，查看原图的加载显示
+5.点击媒体播放器中下方的左旋转按钮，查看图片的旋转加载
+---------------------------------------------------------------------  */
+
+
+package filemanagement;
+
+
+import libs.Common;
+
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.core.UiDevice;
+
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import android.util.*;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+
+
+public class TestCase259 extends Common{
+	
+	public void testTestcase() throws UiObjectNotFoundException, IOException, InterruptedException{
+		
+		Process origin = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		origin.waitFor();
+		
+//		UiDevice.getInstance().takeScreenshot(new File("/mnt/usb/sda1/launch.png"));
+		
+//		sleep(2000);
+		
+						
+			//打开文件管理			
+			searchAppMarket();
+			
+			searchAppRight("com.bestv.ott:id/title", "文件管理");			
+			
+			press(KEY_CODE_OK);
+			
+			//检查是否进入文件管理
+			UiObject find_filemanager = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/activity_main_title"));
+			String find_name = find_filemanager.getText();
+			Log.d("zc","find_name" + find_name );
+			Log.d("zc","中文检查");
+			if(find_name.equalsIgnoreCase("文件管理")){
+				Log.d("zc", "case passed!");
+				System.out.println("case passed!");
+				
+			}
+			else{
+				Log.d("zc", "case failed,pleae check again");
+				
+			}
+			
+			AssertTextExists("文件管理", "Open filemanager failed!");			
+			
+			AssertTextExists("U盘1", "U disk is not exist!");
+			
+			AssertTextExists("内置存储", "EMMC is not exist!");
+			
+			sleep(1000);
+			
+			//切换图片tab
+			press(KEY_CODE_UP);
+			sleep(1000);
+			press(KEY_CODE_RIGHT);
+			sleep(1000);
+						
+			//AssertTextExists("Photo", "Photo folder display error!");	
+			
+			//sleep(500);
+			
+			//进入Photo文件夹
+			//achieve root
+			//Process root1 = Runtime.getRuntime().exec("adb root");
+			//Process root2 = Runtime.getRuntime().exec("adb remount");
+			//Process root3 = Runtime.getRuntime().exec("adb connect 172.17.5.41");
+			//sleep(3000);
+			
+			press(KEY_CODE_DOWN);
+			//[modify by jia]
+			File path = new File("/sdcard/thumbnail1.png");
+			//String pic_path = "/sdcard/thumbnail1.png";
+			//String native_path = "D:\\personal\\native_screencap";
+			getUiDevice().takeScreenshot(path);
+			sleep(2000);
+			//Process pull_pic1 = Runtime.getRuntime().exec("cp " + pic_path );
+			//sleep(5000);
+			//pull_pic1.wait();
+			//searchAppRight("tv.fun.filemanager:id/image_cover_name", "Photo");
+			
+			press(KEY_CODE_OK);
+			File path1 = new File("/mnt/usb/sda1/screenshot/thumbnail2.png");
+			getUiDevice().takeScreenshot(path1);
+			sleep(2000);
+			//Process pull_pic2 = Runtime.getRuntime().exec("adb pull path1 native_path");
+			//sleep(3000);
+			//pull_pic2.waitFor();
+			Log.d("liujia", "case 259:check the screenshot for thumbnail");
+			System.out.println("case 259 need to check screenshot in sdcard!,if the thumbnail was successful displayed,the case passed! ");
+			
+			//[modify by jia]case 260,check picture display completely!
+			String old_pic_name = getAppName("tv.fun.filemanager:id/list_item_text", true);
+			press(KEY_CODE_OK);
+			sleep(4000);
+			String open_pic_name = getAppName("tv.fun.filemanager:id/photo_name_display");
+			File path2 = new File("/mnt/usb/sda1/screenshot/P_1.png");//P-1 can not be screencap,need dev to check!
+			getUiDevice().takeScreenshot(path2);
+			sleep(2000);
+			//Process pull_pic3 = Runtime.getRuntime().exec("adb pull " + path2 + native_path);
+			//sleep(3000);
+			//pull_pic3.waitFor();
+			Log.d("liujia", "open_pic_name :" +open_pic_name);
+			Log.d("liujia", "old_pic_name :"+ old_pic_name);
+			Pattern p = Pattern.compile(".*"+old_pic_name+".*");
+			Matcher m = p.matcher(open_pic_name);
+			boolean b = m.matches();
+			Log.d("liujia", "case260 compile resulsL:"+b);
+			if (b) {
+				Log.d("liujia", "picture has been successful opened,please check the screenshot in sdcard,if display,case 1-260 passed!,name:p_1");
+				System.out.println("picture has been successful opened,please check the screenshot in sdcard,if display,case 1-260 passed!,name:p_1");
+				
+			} else {
+				Log.d("liujia", "case 1-260 failed,check the picture display if the screenshot p_1 is successful display?");
+				System.out.println("case 1-260 failed,check the screenshot P_1 display");
+
+			}
+			
+			/*
+			//检查Photo文件夹的缩略图
+			//AssertTextExists("图片->Photo", "Open filemanager failed!");
+			
+			if (checkImage("tv.fun.filemanager:id/list_item_image_icon", "tv.fun.filemanager:id/list_item_text")){
+				System.out.println("The thumbnail display error!");
+			}
+			else{
+				System.out.println("The thumbnail display successful!");
+			}
+			
+			sleep(1000);
+			
+			//打开最后一张图片
+			String photoName_old = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/list_item_text").selected(true)).getText(); 
+			
+			System.out.println(photoName_old);
+			
+			press(KEY_CODE_OK);
+			
+			
+			sleep(3000);
+			
+			String photoName_new = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/photo_name_display")).getText();
+			
+			System.out.println(photoName_new);
+						
+			UiObject img = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/imageSurfaceView"));
+			
+			if(img.exists()){
+				if(photoName_new.equalsIgnoreCase("当前图片 : " + photoName_old)){					
+					System.out.println("The Photo open successful!");
+				}
+				else{
+					System.out.println("The Photo open failed!");
+				}
+			}
+			else{
+				System.out.println("The Photo can not open!");
+			}
+			
+			//case 1-261,check upward button
+			 */
+			sleep(3000);
+			
+			//点击上一张按钮，确认图片有切换
+			press(KEY_CODE_OK);
+			
+			PressTimes(KEY_CODE_LEFT, 2);
+			
+			press(KEY_CODE_OK);
+			
+			sleep(3000);
+			
+			String photoName_current = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/photo_name_display")).getText();
+						
+			System.out.println(photoName_current);
+			
+			if(photoName_current.equalsIgnoreCase(open_pic_name)){				
+				System.out.println("The Photo change failed");
+				Log.d("liujia", "case 261 failed!,check upward button!");
+			}
+			else{
+				System.out.println("case 1-261 passed!,upward button check pass.");
+				Log.d("liujia", "case 1-261 passed!,upward button check pass.");
+			}
+			
+			sleep(1000);
+			
+			//进行图片旋转,case 1-263		
+			
+//			UiDevice.getInstance().takeScreenshot(new File("/mnt/usb/sda1/rotation_before.png"));
+			
+//			sleep(2000);
+			
+			press(KEY_CODE_OK);
+			
+			PressTimes(KEY_CODE_RIGHT, 3);
+			
+			press(KEY_CODE_OK);
+			
+			//[modify by jia]
+			sleep(5000);
+			File path3 = new File("/mnt/usb/sda1/screenshot/rotate.png");//rotate.png can not be screencap,need dev to check!!
+			getUiDevice().takeScreenshot(path3);
+			sleep(2000);
+			//Process pull_pic4 = Runtime.getRuntime().exec("adb pull " + path3 + native_path);
+			//sleep(3000);
+			//pull_pic4.waitFor();
+			Log.d("liujia", "case 263 need to check screenshot named:rotate.png");
+			System.out.println("case 263 need to check screenshot named:rotate.png");
+//			UiDevice.getInstance().takeScreenshot(new File("/mnt/usb/sda1/rotation_after.png"));
+			
+//			sleep(2000);
+			
+			//返回设备
+			PressTimes(KEY_CODE_BACK, 3);
+			
+			AssertTextExists("文件管理", "Back to filemanager failed!");
+			
+			press(KEY_CODE_BACK);
+			
+			pressHome();
+			
+			System.out.println("TestCase filemanager 1-259 execute result is pass!");
+			
+		}
+		
+		
+		
+	}
+
+
+

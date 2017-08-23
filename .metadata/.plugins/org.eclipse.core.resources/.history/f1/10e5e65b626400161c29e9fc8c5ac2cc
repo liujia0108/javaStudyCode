@@ -1,0 +1,271 @@
+package libs;
+
+import java.io.IOException;
+
+import android.R.bool;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiDevice;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import constant.Signal_Const;
+
+public class SignalResouce extends UiAutomatorTestCase{
+	public static UiDevice getUiDevice = null;
+	Common Common = new Common();
+	public SignalResouce() {
+		getUiDevice = OriginTestCase.uiDevice;
+		
+	}
+	
+	
+	/*在信号源弹窗中切换当前的信号源光标统一至第一个：DTV下选中
+	 * 函数名：切换光标
+	 * 作者：刘佳
+	 * 返回值：无
+	 */
+	public void SwitchCusor() throws UiObjectNotFoundException {
+		Log.d("liujia", "method 1");
+		UiObject currentSignal = new UiObject(new UiSelector().resourceId(Signal_Const.id.CurrentSelectedSignal).selected(true));
+		String currentName = currentSignal.getText();
+		sleep(2000);
+		Log.d("liujia", "1" + currentName);
+		if ("数字信号".equalsIgnoreCase(currentName)) {
+			
+		}
+		if ("模拟信号".equalsIgnoreCase(currentName)) {
+			Common.pressDPadLeft();
+			Common.pressDPadCenter(2000);
+			Common.pressHome(3000);
+			Common.press(260, 3000);
+			UiObject Signal = new UiObject(new UiSelector().resourceId(Signal_Const.id.CurrentSelectedSignal).selected(true));
+			String SignalName = currentSignal.getText();
+			sleep(2000);
+			assertTrue("failed can not switch cusor to DTV!", SignalName.equalsIgnoreCase("数字信号"));
+		}
+		if ("视频".equalsIgnoreCase(currentName)) {
+			Common.pressDPadLeft("2");
+			Common.pressDPadCenter(2000);
+			Common.pressHome(3000);
+			Common.press(260, 3000);
+			UiObject Signal = new UiObject(new UiSelector().resourceId(Signal_Const.id.CurrentSelectedSignal).selected(true));
+			String SignalName = currentSignal.getText();
+			sleep(2000);
+			assertTrue("failed can not switch cusor to DTV!", SignalName.equalsIgnoreCase("数字信号"));
+			
+		}
+		if ("分量".equalsIgnoreCase(currentName)) {
+			Common.pressDPadLeft("3");
+			Common.pressDPadCenter(2000);
+			Common.pressHome(3000);
+			Common.press(260, 3000);
+			UiObject Signal = new UiObject(new UiSelector().resourceId(Signal_Const.id.CurrentSelectedSignal).selected(true));
+			String SignalName = currentSignal.getText();
+			sleep(2000);
+			assertTrue("failed can not switch cusor to DTV!", SignalName.equalsIgnoreCase("数字信号"));
+			
+		}
+		if ("HDMI1".equalsIgnoreCase(currentName)) {
+			Common.pressDPadLeft("4");
+			Common.pressDPadCenter(2000);
+			Common.pressHome(3000);
+			Common.press(260, 3000);
+			UiObject Signal = new UiObject(new UiSelector().resourceId(Signal_Const.id.CurrentSelectedSignal).selected(true));
+			String SignalName = currentSignal.getText();
+			sleep(2000);
+			assertTrue("failed can not switch cusor to DTV!", SignalName.equalsIgnoreCase("数字信号"));
+			
+		}
+		if ("HDMI2".equalsIgnoreCase(currentName)) {
+			Common.pressDPadLeft("5");
+			Common.pressDPadCenter(2000);
+			Common.pressHome(3000);
+			Common.press(260, 3000);
+			UiObject Signal = new UiObject(new UiSelector().resourceId(Signal_Const.id.CurrentSelectedSignal).selected(true));
+			String SignalName = currentSignal.getText();
+			sleep(2000);
+			assertTrue("failed can not switch cusor to DTV", SignalName.equalsIgnoreCase("数字信号"));
+			
+		}
+		
+	}
+	
+	/*点进入任意指定信号源下
+	 * 函数名：切换信号源并点击进入
+	 * 作者：刘佳
+	 * 返回值：null
+	 */
+	public void enterSignal(String signal) {
+		if ("数字信号".equalsIgnoreCase(signal)) {
+			Common.pressDPadCenter(3000);
+			
+		}
+		if ("模拟信号".equalsIgnoreCase(signal)) {
+			Common.pressDPadRight();
+			Common.pressDPadCenter(3000);
+		}
+		if ("视频".equalsIgnoreCase(signal)) {
+			Common.pressDPadRight(2);
+			Common.pressDPadCenter(3000);
+		}
+		if ("分量".equalsIgnoreCase(signal)) {
+			Common.pressDPadRight(3);
+			Common.pressDPadCenter(3000);
+		}
+		if ("HDMI1".equalsIgnoreCase(signal)) {
+			Common.pressDPadRight(4);
+			Common.pressDPadCenter(3000);
+			
+		}
+		if ("HDMI2".equalsIgnoreCase(signal)) {
+			Common.pressDPadRight(5);
+			Common.pressDPadCenter(3000);
+		}
+		
+	}
+	
+	
+	/*通过log筛选对应的关键字，从而获取当前所进入的信号源id
+	 * 函数名：筛选log
+	 * 作者：刘佳
+	 * 返回值：curInputSource
+	 * 说明：筛选log时，只能将需要筛选的log用正则表达式来进行筛选，自动化logcat中无法通过-s |grep等方法进行筛选，请注意编写正确的
+	 * 正则表达式规则！！
+	 */
+	public String FilterLog(String complieWord) throws IOException, InterruptedException {
+		Log.d("liujia", "begin to filter log to get curInputSource");
+
+		String cmd = "logcat -s RootActivity -d";
+		Log.d("liujia", cmd);
+		Process getLog = Runtime.getRuntime().exec(cmd);
+		//getLog.waitFor();
+		// getLog.wait(5000);
+		String curInputSource = "";
+		try {
+			InputStream log = getLog.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(log));
+			Log.d("liujia", "begin to compile");
+			String logLine;
+			while ((logLine = reader.readLine()) != null) {
+				//Log.d("liujia", "line :"+logLine);
+				Pattern pattern = Pattern.compile(complieWord);
+				Matcher m = pattern.matcher(logLine);
+				boolean mResult = m.matches();
+				if (mResult) {
+					Log.d("liujia", " compile log." + logLine + "," + curInputSource + "," + m.group(1));
+					curInputSource = m.group(1);
+					break;
+				}
+			}
+			
+		} catch (Exception e) {
+			Log.d("liujia", "crash");
+			System.out.println(e.toString());// TODO: handle exception
+		}
+		return curInputSource;
+		
+	}
+	
+	/*检查点击是否进入对应的信号源页面
+	 * 函数名：检查前一个方法中从log拿到的curInputSource值是否对应：
+	 * DTV:28;ATV:1;视频:2;分量:16;HDMI1:23;HDMI2:24;
+	 * 作者：刘佳
+	 * 返回值：true or false
+	 * 注意：此方法必须在用过上面两个方法后才能使用，SwitchCusor() &FilterLog(),因此此方法中的参数是从上面传进来的
+	 */
+	public boolean CheckSignalResource(String currentName,String curInputSource) {
+		if ("数字信号".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("28")) {
+				return true;
+				
+			}
+			else {
+				assertTrue("enter wrong signal for DTV current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		if ("模拟信号".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("1")) {
+				return true;
+				
+			}
+			else {
+				assertTrue("enter wrong signal for ATV current signal is: "+ curInputSource, false);
+				return false;
+			}
+			
+		}
+		if ("视频".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("2")) {
+				return true;
+				
+			}
+			else {
+				assertTrue("enter wrong signal for AV current signal is: "+ curInputSource, false);
+				return false;
+			}
+			
+		}
+		if ("分量".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("16")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for 分量 current signal is: "+ curInputSource, false);
+				return false;
+			}
+			
+		}
+		if ("HDMI1".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("23")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for HDMI1 current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		if ("HDMI2".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("24")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for HDMI2 current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		return false;
+		
+	}
+	
+	/*检查menu按键点击后各个功能按键的显示，适用于DTV/ATV
+	 * 函数名：DTVMenuButton
+	 * 作者：liujia
+	 * 返回值
+	 */
+	public void DTVMenuButton(String SignalName,boolean SignalExist){
+		if ("数字信号".equalsIgnoreCase(SignalName) && SignalExist == false) {
+			Common.pressMenu(2000);
+			ArrayList<String> DTVMenuList = new ArrayList<String>();
+			
+			String[] xxx = {"xx", "xx", "xxx"}; 
+			
+			DTVMenuList.add(xxx, "sss");
+		}
+		
+	}
+	
+
+}

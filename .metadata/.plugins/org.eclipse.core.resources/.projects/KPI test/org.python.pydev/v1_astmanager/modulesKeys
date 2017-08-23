@@ -1,0 +1,60 @@
+MODULES_MANAGER_V2
+__init__|C:\Python27\Lib\site-packages\xlrd\__init__.py
+biffh|C:\Python27\Lib\site-packages\xlrd\biffh.py
+book|C:\Python27\Lib\site-packages\xlrd\book.py
+compdoc|C:\Python27\Lib\site-packages\xlrd\compdoc.py
+formatting|C:\Python27\Lib\site-packages\xlrd\formatting.py
+formula|C:\Python27\Lib\site-packages\xlrd\formula.py
+info|C:\Python27\Lib\site-packages\xlrd\info.py
+licences|C:\Python27\Lib\site-packages\xlrd\licences.py
+sheet|C:\Python27\Lib\site-packages\xlrd\sheet.py
+test1.FinanceChart|D:\personal\eclipse\KPI test\test1\FinanceChart.py
+test1.__init__|D:\personal\eclipse\KPI test\test1\__init__.py
+test1.chartdir|D:\personal\eclipse\KPI test\test1\chartdir.dll
+test1.pychartdir|D:\personal\eclipse\KPI test\test1\pychartdir.py
+test1.pychartdir25|D:\personal\eclipse\KPI test\test1\pychartdir25.pyd
+test1.pychartdir26|D:\personal\eclipse\KPI test\test1\pychartdir26.pyd
+test1.pychartdir27|D:\personal\eclipse\KPI test\test1\pychartdir27.pyd
+test1.pychartdir30|D:\personal\eclipse\KPI test\test1\pychartdir30.pyd
+test1.pychartdir31|D:\personal\eclipse\KPI test\test1\pychartdir31.pyd
+test1.pychartdir32|D:\personal\eclipse\KPI test\test1\pychartdir32.pyd
+test1.pychartdir33|D:\personal\eclipse\KPI test\test1\pychartdir33.pyd
+test1.pychartdir34|D:\personal\eclipse\KPI test\test1\pychartdir34.pyd
+timemachine|C:\Python27\Lib\site-packages\xlrd\timemachine.py
+xldate|C:\Python27\Lib\site-packages\xlrd\xldate.py
+xlsx|C:\Python27\Lib\site-packages\xlrd\xlsx.py
+xlutils.__init__|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\__init__.py
+xlutils.copy|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\copy.py
+xlutils.display|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\display.py
+xlutils.filter|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\filter.py
+xlutils.margins|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\margins.py
+xlutils.save|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\save.py
+xlutils.styles|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\styles.py
+xlutils.tests.__init__|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\__init__.py
+xlutils.tests.fixtures|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\fixtures.py
+xlutils.tests.test_copy|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\test_copy.py
+xlutils.tests.test_docs|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\test_docs.py
+xlutils.tests.test_filter|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\test_filter.py
+xlutils.tests.test_save|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\test_save.py
+xlutils.tests.test_styles|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\test_styles.py
+xlutils.tests.test_view|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\tests\test_view.py
+xlutils.view|C:\Python27\Lib\site-packages\xlutils-1.7.1-py2.7.egg\xlutils\view.py
+xlwt.BIFFRecords|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\BIFFRecords.py
+xlwt.Bitmap|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Bitmap.py
+xlwt.Cell|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Cell.py
+xlwt.Column|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Column.py
+xlwt.CompoundDoc|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\CompoundDoc.py
+xlwt.ExcelFormula|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\ExcelFormula.py
+xlwt.ExcelFormulaLexer|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\ExcelFormulaLexer.py
+xlwt.ExcelFormulaParser|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\ExcelFormulaParser.py
+xlwt.ExcelMagic|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\ExcelMagic.py
+xlwt.Formatting|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Formatting.py
+xlwt.Row|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Row.py
+xlwt.Style|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Style.py
+xlwt.UnicodeUtils|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\UnicodeUtils.py
+xlwt.Utils|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Utils.py
+xlwt.Workbook|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Workbook.py
+xlwt.Worksheet|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\Worksheet.py
+xlwt.__init__|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\__init__.py
+xlwt.antlr|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\antlr.py
+xlwt.compat|C:\Python27\Lib\site-packages\xlwt-1.0.0-py2.7.egg\xlwt\compat.py

@@ -1,0 +1,592 @@
+package libs;  
+import com.android.uiautomator.core.UiObject;  
+import com.android.uiautomator.core.UiObjectNotFoundException;  
+import com.android.uiautomator.core.UiSelector;
+
+import java.io.IOException;
+
+import com.android.uiautomator.core.UiCollection;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+import libs.AppStore;
+
+  
+public class Common extends UiAutomatorTestCase {  
+	//遥控器键值常量
+	public static final int KEY_CODE_UP = 19;
+	public static final int KEY_CODE_DOWN = 20;
+	public static final int KEY_CODE_LEFT = 21;
+	public static final int KEY_CODE_RIGHT = 22;
+	public static final int KEY_CODE_OK = 23;
+	public static final int KEY_CODE_BACK = 4;
+	public static final int KEY_CODE_HOME = 3;
+	public static final int KEY_CODE_MENU = 82;
+	
+	@Override
+    protected void setUp() throws Exception {
+		getUiDevice().pressHome();
+		sleep(1000);
+    }
+	@Override
+    protected void tearDown() throws Exception {
+		getUiDevice().pressHome();
+    }
+	
+	//---------------------------------------------常用的断言方法---------------------------------------------
+	
+	/*断言当前页面上文字是否存在的函数，如果在页面上找到了text则断言成功，否则断言失败并输出message
+	 *参数解释：
+	 *text：为当前页面上要找的字符串 
+	 *message：如果未找到text则需要输出的断言错误信息 
+	 */
+	public void AssertTextExists(String text,String message){
+		try {
+			new UiCollection(new UiSelector()).getChildByText(new UiSelector(), text);
+			//in order to assert the final result in some cases,add next lines!
+			
+		} catch (UiObjectNotFoundException e) {
+			assertTrue(message, false);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/*断言当前页面上文字是否存在的函数。如果当前页面的包名是packageName，则断言成功，否则断言失败并输出message
+	 *参数解释：
+	 *packageName：要找的包名信息
+	 *message：如果未找到想要的包名，输出的断言错误信息 
+	 */
+	public void AssertPackageExists(String packageName,String message){
+		try {
+			new UiCollection(new UiSelector().packageName(packageName)).getChild(new UiSelector().packageName(packageName));
+		} catch (UiObjectNotFoundException e1) {
+			assertTrue(message, false);
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	
+	/*断言当前页面上文字（Launcher的历史记录）是否存在的函数。如果当前页面找到了text，则断言成功，光标向下移动一次，否则断言失败并输出没有历史记录
+	 *参数解释：
+	 *text：为当前页面上要找的字符串
+	 *Add by zhengcheng
+	 */
+	public void AssertTextExists(String text){
+		try {
+			new UiCollection(new UiSelector()).getChildByText(new UiSelector(), text);
+			press(KEY_CODE_DOWN);
+			sleep(500);
+		} catch (UiObjectNotFoundException e) {
+			System.out.println("No watch record");
+		}
+	}
+//---------------------------------------------对常用的方法进行二次封装，增加时间选项 start---------------------------------------------
+	public void pressHome(long time){
+		getUiDevice().pressHome();
+		sleep(time);
+	}
+	public void pressHome(){
+		getUiDevice().pressHome();
+		sleep(1000);
+	}
+	
+	public void pressMenu(long time){
+		getUiDevice().pressMenu();
+		sleep(time);
+	}
+	public void pressMenu(){
+		getUiDevice().pressMenu();
+		sleep(1000);
+	}
+	
+	public void pressBack(long time){
+		getUiDevice().pressBack();
+		sleep(time);
+	}
+	public void pressBack(){
+		getUiDevice().pressBack();
+		sleep(1000);
+	}
+
+	public void pressDPadCenter(long time){
+		getUiDevice().pressDPadCenter();
+		sleep(time);
+	}
+	public void pressDPadCenter(){
+		getUiDevice().pressDPadCenter();
+		sleep(1000);
+	}
+	
+	public void pressDPadDown(long time){
+		getUiDevice().pressDPadDown();
+		sleep(time);
+	}
+	public void pressDPadDown(){
+		getUiDevice().pressDPadDown();
+		sleep(1000);
+	}
+	
+	public void pressDPadLeft(long time){
+		getUiDevice().pressDPadLeft();
+		sleep(time);
+	}
+	public void pressDPadLeft(){
+		getUiDevice().pressDPadLeft();
+		sleep(1000);
+	}
+	
+	public void pressDPadRight(long time){
+		getUiDevice().pressDPadRight();
+		sleep(time);
+	}
+	public void pressDPadRight(){
+		getUiDevice().pressDPadRight();
+		sleep(1000);
+	}
+	
+	public void pressDPadUp(long time){
+		getUiDevice().pressDPadUp();
+		sleep(time);
+	}
+	public void pressDPadUp(){
+		getUiDevice().pressDPadUp();
+		sleep(1000);
+	}
+	
+	public void pressSearch(long time){
+		getUiDevice().pressSearch();
+		sleep(time);
+	}
+	public void pressSearch(){
+		getUiDevice().pressSearch();
+		sleep(1000);
+	}
+	
+	public void press(int KEY_CODE){
+		getUiDevice().pressKeyCode(KEY_CODE);
+	}
+	public void press(int KEY_CODE,int time){
+		getUiDevice().pressKeyCode(KEY_CODE,time);
+		sleep(time);
+	}
+	
+	public void sleep(int time){
+		try {
+			Thread.sleep(time);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*通过shell命令启动应用
+	 *	参数说明：
+	 *		name:要启动的应用
+	 */
+	public void launchApp(String name){
+		String packageName = "";
+		if (name == "appStore"){
+			packageName = "tv.fun.appstore/.ui.AppStoreActivity";
+		}
+		String command = "am start ";
+		try {
+			Runtime.getRuntime().exec(command + packageName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	//按照字符串command指定的命令强制停止指定应用，如：am force-stop 命令
+	public void forceStopApp(String command){
+		try {
+			Runtime.getRuntime().exec(command);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	/*随机按某个键几次的函数。
+	 *参数解释：
+	 *times：随机按某个键的次数
+	 *KEY_CODE：想要按的键的键值 
+	 */
+	public void RandomPress(int times,int KEY_CODE){
+		for(int i=0; i<=(int)(Math.random()*times+1); i++){
+			getUiDevice().pressKeyCode(KEY_CODE);
+		}
+	}
+	/*循环多次按键
+	 *参数解释：
+	 *KEY_CODE：想要按的键的键值 
+	 *times：按某个键的次数
+	 *Add by zhengcheng 
+	 */
+	public void PressTimes(int KEY_CODE, int times){
+		for(int i=1; i<=times; i++){
+			getUiDevice().pressKeyCode(KEY_CODE);
+			sleep(500);
+		}
+	}
+	//在Launcher向下查找应用市场，只能在按Home键返回到Launcher的场景下进行
+	//Add by zhengcheng
+		public void searchAppMarket(){					
+
+			AssertTextExists("观看历史");
+
+			PressTimes(KEY_CODE_DOWN, 8);
+
+		}
+
+	/*向右查找app，将焦点移动到想要的文件上。如果未找到对应的文件名，则移动到最后一个文件上。
+	 *参数解释：
+	 *resID：文件名对应的控件resourceID 
+	 *appName：想要移动到的文件的名称
+	 *Add by zhengcheng
+	 */
+	public void searchAppRight(String resID, String appName){
+		try{
+			String searchName_new = "";
+			String searchName_old = "";
+		
+			while(true){					
+				
+				searchName_new = new UiObject(new UiSelector().resourceId(resID).selected(true)).getText();
+				
+				if(searchName_new.equalsIgnoreCase(appName) ){	
+					sleep(500);
+					break;				
+				}
+				else{				
+					press(KEY_CODE_RIGHT);
+					
+					sleep(500);
+									
+					if(searchName_old.equalsIgnoreCase(searchName_new)){
+						break;
+					}
+					else{
+						searchName_old = searchName_new;
+					}
+				}
+			}
+		}catch (UiObjectNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/*向右移动焦点到最后一个文件，返回焦点所遍历的文件个数。
+	 *参数解释：
+	 *resID：文件名对应的控件resourceID
+	 *Add by zhengcheng
+	 */
+	 public int moveNum(String folder_resID,String list_resID){
+			
+			//String searchName_new = "";
+			//String searchName_old = "";
+			    
+			int moveNumber = 0;
+				
+			while(true){					
+					
+				UiObject app = new UiObject(new UiSelector().resourceId(folder_resID).selected(true));
+					
+				try {
+					int searchName_new = Integer.parseInt(app.getText());
+				} catch (UiObjectNotFoundException e) {
+				    // TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				//[modify by jia]
+				press(KEY_CODE_OK);//try to enter the folder
+				sleep(1000);
+				String file_name_pre = new UiObject(new UiSelector().resourceId(list_resID).selected(true)).getText();
+				String file_name_next = "";
+				do {
+					press(KEY_CODE_RIGHT);
+					file_name_next = new UiObject(new UiSelector().resourceId(list_resID).selected(true)).getText();
+					moveNumber++;
+				} while (file_name_next.equalsIgnoreCase(file_name_pre));
+				if (moveNumber ==searchName_new ) {
+					
+				} else {
+
+				}
+				//for zhengcheng:maybe there has some error in next code,please check!
+				if(searchName_old.equalsIgnoreCase(searchName_new)){
+					break;
+				}
+				else{				
+					searchName_old = searchName_new;
+					moveNumber++;
+					System.out.println(searchName_new);
+					press(KEY_CODE_RIGHT);
+					sleep(500);
+				}
+			}
+			return moveNumber;	
+	 }	
+		
+		
+	 
+	/*向右移动查找想要的控件，如果找到该控件，则停止移动，并返回True，否则移动到最后一个文件，并返回False
+	 *参数解释：
+	 *resID：想要查找的控件的resourceID
+	 *Add by zhengcheng
+	 */
+	public boolean checkImage(String resID_aim, String resID_filename){
+			
+			boolean iconExist = false;
+			String searchName_new = "";
+			String searchName_old = "";
+					
+			while(true){
+				
+				try {
+					searchName_new = new UiObject(new UiSelector().resourceId(resID_filename).selected(true)).getText();
+					System.out.println(searchName_new);
+				} catch (UiObjectNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+						
+				if(new UiObject(new UiSelector().resourceId(resID_aim).selected(true)).exists()){	
+					iconExist = true;
+					sleep(500);
+					break;				
+				}
+				else{				
+					press(KEY_CODE_RIGHT);
+					
+					sleep(500);
+					
+					if(searchName_old.equalsIgnoreCase(searchName_new)){
+						break;
+					}
+					else{
+						searchName_old = searchName_new;
+					}
+
+				}				
+			}
+			
+			return iconExist;
+
+	}
+	
+	
+	/*在当前页面查找某个字符串的函数，如果找到了str，返回true，否则返回false。
+	 *参数解释：
+	 *str：要在当前页面找的字符串
+	 */
+	public boolean checkText(String str){
+		UiObject tmp = new UiObject(new UiSelector().text(str));
+		if(tmp.exists()){
+			return true ;
+		}else{
+			return false ;
+		}
+	}
+	/*在当前页面的所有Button上查找某个字符串str的函数，如果找到了str，返回true，否则返回false。
+	 *参数解释：
+	 *str：要在当前页面所有Button上查找的字符串
+	 */
+	public boolean checkButtonText(String str){
+		UiObject tmp = new UiObject(new UiSelector().text(str).className("android.widget.Button"));
+		if(tmp.exists()){
+			return true ;
+		}else{
+			return false ;
+		}
+	}
+	/*检查当前页面的包名是否是packagename的函数，如果是packagename，则返回true，否则返回false
+	 *参数解释：
+	 *packagename：要检查的包名
+	 */
+	public boolean checkPackageName(String packagename){
+		UiObject tmp = new UiObject(new UiSelector().packageName(packagename));
+		if(tmp.exists()){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	/*点击指定resourceId的控件。如果控件未找到，断言失败
+	 *参数解释：
+	 *id：要点击空间的resourceId
+	 */
+	public void clickById(String id){
+		UiObject tmp = new UiObject(
+				new UiSelector().resourceId(id));
+			try {
+				tmp.click();
+			} catch (UiObjectNotFoundException e) {
+				assertTrue("", false);
+				e.printStackTrace();
+			}
+		
+	}
+	/*点击指定了resourceId和text的控件。如果控件未找到，断言失败
+	 *参数解释：
+	 *id：要点击空间的resourceId
+	 *text：控件上包含的文字
+	 */
+	public void clickById(String id,String text){
+		UiObject tmp = new UiObject(
+				new UiSelector().resourceId(id).text(text));
+		try {
+			tmp.click();
+		} catch (UiObjectNotFoundException e) {
+			assertTrue("", false);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/*判断当前页面是否包含字符串str的函数，如果包含，返回true，否则返回false
+	 *参数解释：
+	 *str：指定要查找的字符串片段
+	 */
+	public boolean checkTextContains(String str){
+		UiObject tmp = new UiObject(new UiSelector().textContains(str));
+		if(tmp.exists()){
+			return true ;
+		}else{
+			return false ;
+		}
+	}
+	//简单的初始化函数，会将光标至于第一行第一列
+	public void init(){
+		/*try {
+			myDevice.wakeUp();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}*/
+		getUiDevice().pressHome();
+		getUiDevice().pressKeyCode(KEY_CODE_UP);
+	}
+	/*按照某个方向遍历一定次数，查找某个应用名字的函数，如果找到了应用名，则光标停止在刚刚移动到的位置，
+	 *如果指定次数内未找到应用名，则断言失败
+	 *参数解释：
+	 *presstimes：指定遍历的次数
+	 *KEY_CODE：指定方向键的键值
+	 *AppName：指定要查找的应用名称
+	 */
+	public void SearchAppName(int presstimes,int KEY_CODE,String AppName){
+		boolean flag = false;
+		for(int i=0;i<=presstimes;i++){
+			getUiDevice().pressKeyCode(KEY_CODE);
+			sleep(1000);
+			if(checkText(AppName)){
+				flag = true;
+				break;
+			}
+		}	
+		if(flag){
+			sleep(2000);
+			System.out.println(AppName+"已经找到");
+		}else{
+			System.out.println(AppName+"未找到");
+			assertTrue("未找到"+AppName, flag);
+		}	
+	}
+	/*按照某个方向遍历一定次数，判断某个应用名字是否存在的函数，如果找到了应用名，则遍历停止，并返回true。
+	 *如果指定遍历次数内未找到应用名，则返回false，
+	 *参数解释：
+	 *presstimes：指定遍历的次数
+	 *KEY_CODE：指定方向键的键值
+	 *AppName：指定要查找的应用名称
+	 */
+	public boolean AppNameIsExists(int presstimes,int KEY_CODE,String AppName){
+		for(int i=0;i<=presstimes;i++){
+			getUiDevice().pressKeyCode(KEY_CODE);
+			sleep(1000);
+			if(checkText(AppName)){
+				return true;
+			}
+		}
+		return false;
+	}
+	//进入到应用管理中卸载所有应用的函数。
+	public void clearAppList(){
+		launchApp("am start --ez management true tv.fun.appstore/.ui.AppStoreActivity");
+		sleep(10000);
+		press(KEY_CODE_DOWN);
+		press(KEY_CODE_DOWN);
+		press(KEY_CODE_RIGHT);
+		press(KEY_CODE_OK);
+		sleep(5000);
+		if(checkText(constant.AppStore.APPNULL)){
+			System.out.println("没有第三方应用被安装！");
+			init();
+		}else{
+			while(!checkText(constant.AppStore.APPNULL)){
+				press(KEY_CODE_OK);
+				sleep(5000);
+				press(KEY_CODE_OK);
+				sleep(5000);
+				if(!checkTextContains("M")||checkText(constant.AppStore.APPNULL)){
+					break;
+				}
+			}
+		}
+		
+	}
+	//在应用详情页面点击安装按钮进行安装操作的函数。你可以在进入到一个未安装应用的详情页面时使用它。
+	public void InstallInDetailPage(){
+		if(checkText(constant.AppStore.BUTTON_OPEN)){
+			System.out.println("此程序已经成功安装！");
+		}else{
+			press(KEY_CODE_OK);
+			System.out.println("app安装中");
+			int count = 0 ;
+			while(!checkText(constant.AppStore.BUTTON_OPEN)){
+				sleep(5000);
+				count ++ ;
+				if(count > 50){
+					assertTrue("安装超时!", checkText(constant.AppStore.BUTTON_OPEN));
+					count = 0;
+					break;
+				}
+			}
+			if(checkText(constant.AppStore.BUTTON_OPEN)){
+				System.out.println("app安装成功！");
+			}
+		}				
+	}
+	/*根据指定的resourceId找到控件并返回控件上的文字的函数
+	 *参数解释：
+	 *resourceId：要找到某控件的resourceId
+	 */
+	public String getAppName(String resourceId){
+		UiObject tmp = new UiObject(new UiSelector().resourceId(resourceId));
+		try {
+			String str = null;
+			str = (String)tmp.getText();
+			return str;
+		} catch (UiObjectNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	/*根据指定的resourceId和selected属性找到控件并返回控件上的文字的函数
+	 *参数解释：
+	 *resourceId：要找到某控件的resourceId
+	 *selectedflag：该控件的selected属性的状态，true或者false
+	 */
+	public String getAppName(String resourceId, boolean selectedflag){
+		UiObject tmp = new UiObject(new UiSelector().resourceId(resourceId).selected(selectedflag));
+		try {
+			String str = null;
+			str = (String)tmp.getText();
+			return str;
+		} catch (UiObjectNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	//added by liujia
+	//this method is used to check if the file you opened was which one you have selected!
+
+		
+	
+	//---------------------------------------------对常用的方法进行二次封装，增加时间选项 end---------------------------------------------
+	
+} 

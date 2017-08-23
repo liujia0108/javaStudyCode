@@ -1,0 +1,299 @@
+/*-----------------------testcase 1-259、1-260、1-261、1-263-----------------------------
+ 预置条件：
+1.U盘中的文件夹只有Video、Photo、Music这三个文件夹
+2.U盘Photo文件夹中的图片最后两张为非gif格式可旋转的图片
+3.U盘已插入TV
+
+操作步骤：
+1.进入文件管理
+2.点击遥控器左右按键切换焦点到图片tab
+3.选择任意包含有图片文件夹，加载全部的图片缩略图，查看缩略图的正常显示
+4.点击最后一张图片进行查看，查看原图的加载显示
+5.点击媒体播放器中下方的左旋转按钮，查看图片的旋转加载
+---------------------------------------------------------------------  */
+
+
+package filemanagement;
+
+
+import libs.Common;
+
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.core.UiDevice;
+
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import android.util.*;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+
+
+public class TestCase259 extends libs.OriginTestCase{
+	
+	public void testcase259() throws UiObjectNotFoundException, IOException, InterruptedException{
+		//[jia]
+		Process origin = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		origin.waitFor();
+		//Common.pressHome();
+		
+//		UiDevice.getInstance().takeScreenshot(new File("/mnt/usb/sda1/launch.png"));
+		
+//		sleep(2000);
+		
+		try{
+						
+			//打开文件管理			
+			Common.searchAppMarket();
+			
+			Common.searchAppRight("com.bestv.ott:id/title", "文件管理");			
+			
+			Common.pressDPadCenter();
+			
+			//检查是否进入文件管理
+			UiObject find_filemanager = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/activity_main_title"));
+			String find_name = find_filemanager.getText();
+			Log.d("zc","find_name" + find_name );
+			Log.d("zc","中文检查");
+			if(find_name.equalsIgnoreCase("文件管理")){
+				Log.d("zc", "case passed!");
+				System.out.println("case passed!");
+				
+			}
+			else{
+				Log.d("zc", "case failed,pleae check again");
+				
+			}
+			
+			Common.AssertTextExists("文件管理", "Open filemanager failed!");			
+			
+			Common.AssertTextExists("U盘1", "U disk is not exist!");
+			
+			Common.AssertTextExists("内置存储", "EMMC is not exist!");
+			
+			sleep(1000);
+			
+			//切换图片tab
+			Common.pressDPadRight();
+						
+			//Common.AssertTextExists("Photo", "Photo folder display error!");	
+			//because of the folder name is varaible,so can not use assert here!
+			
+//			sleep(500);
+			
+			//进入Photo文件夹
+			Common.pressDPadDown();
+			//[jia]
+			Process test1 = Runtime.getRuntime().exec("mkdir /sdcard/screenshot/");
+			
+			//add by jia
+			/*
+			InputStream inputStream = test1.getInputStream();
+			byte[] data = new byte[256];
+			inputStream.read(data);
+			new String(data);
+			*/
+			String thumbnail1 = "/sdcard/screenshot_compare/thumbnail1_origin.png";
+			
+			sleep(1000);
+			test1.waitFor();
+			File path = new File("/sdcard/screenshot/thumbnail1.png");
+			getUiDevice().takeScreenshot(path);
+			sleep(6000);
+			Log.d("liujia", "frist screenshot,check result!");
+			//add compare
+			String cmd = "busybox diff "+ path + " /sdcard/screenshot_compare/thumbnail1_origin.png";
+			Process compare1 = Runtime.getRuntime().exec(cmd);
+	        StringBuilder sb = new StringBuilder();
+	        String line = null;
+	        String sb_string = "";
+	        
+			try {
+				InputStream input1 = compare1.getInputStream();
+				Log.d("liujia", "wang:"+input1.toString());
+				BufferedReader reader = new BufferedReader(new InputStreamReader(input1)); 
+				Log.d("liujia", "wang:" + reader.toString());
+				Log.d("liujia", "wang:" + reader.read());
+	            while ((line = reader.readLine()) != null) {
+	            	sb.append(line + "\n");
+	            }
+	            sb_string = sb_string + sb.toString();
+	            Log.d("liujia", cmd + " read out string = " + sb_string);
+			} catch (Exception e) {
+				Log.e("liujia", e.getMessage());
+			}
+			//pattern
+			
+			boolean compile_result1 = Common.compile_matcher(".+/s+differ.*", sb_string);
+			if (compile_result1) {
+				Log.i("liujia", "thumbnail1 compare failed,please check case 1-259");
+				System.out.println("case 1-259 failed");
+				
+			} else {
+				Log.i("liujia", "thumbnail1 compare passed,case 1-259 first pass!");
+				System.out.println("case 1-259 passed");
+				
+
+			}
+			
+			
+
+	
+			Common.pressDPadCenter();
+			File path1 = new File("/sdcard/screenshot/thumbnail2.png");
+			String screenshot_path1 = "/sdcard/screenshot/thumbnail2.png";
+			getUiDevice().takeScreenshot(path1);
+			sleep(2000);
+			Log.d("liujia", "case 259:check the screenshot for thumbnail");
+			System.out.println("case 259 need to check screenshot in sdcard!,if the thumbnail was successful displayed,the case passed! ");
+			Common.pic_diff("/sdcard/screenshot_compare/thumbnail2_origin.png",screenshot_path1);
+			
+			//[jia]case 1-260
+			String old_pic_name =Common.getAppName("tv.fun.filemanager:id/list_item_text", true);
+			Common.pressDPadCenter();;
+			sleep(4000);
+			String open_pic_name = Common.getAppName("tv.fun.filemanager:id/photo_name_display");
+			File path2 = new File("/sdcard/screenshot/P_1.png");//P-1 can not be screencap,need dev to check!
+			getUiDevice().takeScreenshot(path2);
+			String screenshot_path2 = "/sdcard/screenshot/P_1.png";
+			sleep(2000);
+			Log.d("liujia", "open_pic_name :" +open_pic_name);
+			Log.d("liujia", "old_pic_name :"+ old_pic_name);
+			Common.pic_diff("/sdcard/screenshot_compare/P_1_origin.png",screenshot_path2);
+			
+			Pattern p = Pattern.compile(".*"+old_pic_name+".*");
+			Matcher m = p.matcher(open_pic_name);
+			boolean b = m.matches();
+			Log.d("liujia", "case260 compile result:"+b);
+			if (b) {
+				Log.d("liujia", "picture has been successful opened,please check the screenshot in sdcard,if display,case 1-260 passed!,name:p_1");
+				System.out.println("picture has been successful opened,please check the screenshot in sdcard,if display,case 1-260 passed!,name:p_1");
+				
+			} else {
+				Log.d("liujia", "case 1-260 failed,check the picture display if the screenshot p_1 is successful display?");
+				System.out.println("case 1-260 failed,check the screenshot P_1 display");
+
+			}
+			sleep(3000);
+			/*
+			Common.searchAppRight("tv.fun.filemanager:id/image_cover_name", "Photo");
+			
+			Common.pressDPadCenter();
+			
+			//检查Photo文件夹的缩略图
+			Common.AssertTextExists("图片->Photo", "Open filemanager failed!");
+			
+			if (Common.checkImage("tv.fun.filemanager:id/list_item_image_icon", "tv.fun.filemanager:id/list_item_text")){
+				System.out.println("The thumbnail display error!");
+			}
+			else{
+				System.out.println("The thumbnail display successful!");
+			}
+			
+//			sleep(1000);
+			
+			//打开最后一张图片
+			String photoName_old = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/list_item_text").selected(true)).getText(); 
+			
+			System.out.println(photoName_old);
+			
+			Common.pressDPadCenter();
+			
+			sleep(3000);
+			
+			String photoName_new = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/photo_name_display")).getText();
+			
+			System.out.println(photoName_new);
+						
+			UiObject img = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/imageSurfaceView"));
+			
+			if(img.exists()){
+				if(photoName_new.equalsIgnoreCase("当前图片 : " + photoName_old)){					
+					System.out.println("The Photo open successful!");
+				}
+				else{
+					System.out.println("The Photo open failed!");
+				}
+			}
+			else{
+				System.out.println("The Photo can not open!");
+			}
+					
+			sleep(3000);
+			*/
+			
+			//点击上一张按钮，确认图片有切换
+			Common.pressDPadCenter();
+			
+			Common.PressTimes("LEFT", 2);
+			
+			Common.pressDPadCenter();
+			
+			sleep(3000);
+			
+			String photoName_current = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/photo_name_display")).getText();
+			Log.d("liujia", "after press upward button,check name:"+photoName_current);		
+			System.out.println(photoName_current);
+			
+			if(photoName_current.equalsIgnoreCase(open_pic_name)){				
+				System.out.println("The Photo change failed");
+				Log.d("liujia", "case 261 failed!,check upward button!");
+			}
+			else{
+				//[jia]System.out.println("The Photo change successful!");
+				System.out.println("case 1-261 passed!,upward button check pass.");
+				Log.d("liujia", "case 1-261 passed!,upward button check pass.");
+			}
+			
+			sleep(5000);
+			
+			//进行图片旋转			
+			
+//			UiDevice.getInstance().takeScreenshot(new File("/mnt/usb/sda1/rotation_before.png"));
+			
+//			sleep(2000);
+			
+			Common.pressDPadCenter();
+			sleep(1000);
+			Common.PressTimes("RIGHT", 3);
+			
+			Common.pressDPadCenter();
+			
+			sleep(5000);
+			//[jia]
+			File path3 = new File("/sdcard/screenshot/rotate.png");//rotate.png can not be screencap,need dev to check!!
+			getUiDevice().takeScreenshot(path3);
+			String screenshot_path3 = "/sdcard/screenshot/rotate.png";
+			sleep(2000);
+			Common.pic_diff("/sdcard/screenshot_compare/rotate_origin.png",screenshot_path3);
+			Log.d("liujia", "case 263 need to check screenshot named:rotate.png");
+			System.out.println("case 263 need to check screenshot named:rotate.png");
+			
+//			UiDevice.getInstance().takeScreenshot(new File("/mnt/usb/sda1/rotation_after.png"));
+			
+//			sleep(2000);
+			
+			//返回设备
+			Common.PressTimes("BACK", 3);
+			
+			Common.AssertTextExists("文件管理", "Back to filemanager failed!");
+			
+			Common.pressBack();
+			
+			Common.pressHome();
+			
+			System.out.println("TestCase filemanager 1-259 execute result is pass!");
+			
+		}
+		catch(Exception e){
+			
+			System.out.println(e.toString());
+			
+		}
+		
+		
+	}
+
+}

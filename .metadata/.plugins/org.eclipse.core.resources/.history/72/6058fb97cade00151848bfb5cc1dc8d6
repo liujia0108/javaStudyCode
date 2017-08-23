@@ -1,0 +1,121 @@
+/*-----------------------testcase 1-266-----------------------------
+ 预置条件：
+1.U盘中的文件夹只有Video、Photo、Music这三个文件夹
+2.U盘已插入TV
+
+操作步骤：
+1.进入文件管理
+2.点击遥控器左右按键切换当前焦点到视频tab下
+3.查看当前所有设备中包含有视频文件的Video文件夹显示，文件夹右上角显示当前文件夹中包含的视频文件个数
+---------------------------------------------------------------------  */
+
+
+
+package filemanagement;
+
+
+import libs.Common;
+
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+
+import android.R.integer;
+import android.util.*;
+
+
+public class TestCase266 extends Common{
+	
+	public void testTestcase() throws UiObjectNotFoundException{
+		
+		Process origin = Runtime.getRuntime().exec("am force-stop tv.fun.filemanager");
+		origin.waitFor();
+		
+		try{
+			
+			//打开文件管理
+			searchAppMarket();
+			
+			searchAppRight("com.bestv.ott:id/title", "文件管理");		
+			
+			press(KEY_CODE_OK);
+			
+			//检查是否进入文件管理
+			UiObject find_filemanager = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/activity_main_title"));
+			String find_name = find_filemanager.getText();
+			Log.d("zc","find_name" + find_name );
+			Log.d("zc","中文检查");
+			if(find_name.equalsIgnoreCase("文件管理")){
+				Log.d("zc", "case passed!");
+				System.out.println("case passed!");
+				
+			}
+			else{
+				Log.d("zc", "case failed,pleae check again");
+				
+			}
+			
+			AssertTextExists("文件管理", "Open filemanager failed!");			
+			
+			AssertTextExists("U盘1", "U disk is not exist!");
+			
+			AssertTextExists("内置存储", "EMMC is not exist!");
+			
+			sleep(1000);
+			
+			//切换视频tab
+			PressTimes(KEY_CODE_RIGHT, 2);
+						
+			AssertTextExists("Video", "Video folder display error!");	
+			
+			System.out.println("Display video tab successful");
+			
+			//进入Video文件夹，检查video个数显示是否正确
+			press(KEY_CODE_DOWN);
+			
+			searchAppRight("tv.fun.filemanager:id/list_item_text", "Video");
+			
+			int videoNum = Integer.parseInt(new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/video_cover_count").selected(true)).getText());
+			Log.d("zc", "video_folder_num"+videoNum);
+			//System.out.println(videoNum);
+			
+			press(KEY_CODE_OK);
+			
+			sleep(1000);
+			
+			int movenum = moveNum("tv.fun.filemanager:id/video_cover_count","tv.fun.filemanager:id/list_item_text");
+			Log.d("zc", "check file num:"+movenum);
+			System.out.println(movenum);
+			
+			if(videoNum == movenum){
+				Log.d("zc", "case 1-266 passed!");
+				System.out.println("case 1-266 passed!");
+			}
+			else{
+				Log.d("zc", "case 1-266 failed!");
+				System.out.println("case 1-266 failed!");
+			}
+			
+			/*
+			//返回设备
+			PressTimes(KEY_CODE_BACK, 2);
+			
+			AssertTextExists("文件管理", "Back to filemanager failed!");
+			
+			press(KEY_CODE_BACK);
+			
+			pressHome();
+			
+			System.out.println("TestCase filemanager 1-266 execute result is pass!");
+			*/
+			//case1-269
+			
+		}
+		catch(Exception e){
+			
+			System.out.println(e.toString());
+			
+		}
+		
+	}
+}

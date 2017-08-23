@@ -1,0 +1,922 @@
+package libs;
+
+import java.io.IOException;
+
+import android.R.bool;
+import android.R.integer;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiDevice;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import constant.Signal_Const;
+import libs.Settings;
+import libs.FunTV;
+
+public class SignalResouce extends UiAutomatorTestCase{
+	public static UiDevice getUiDevice = null;
+	Common Common = new Common();
+	Settings settings = new Settings();
+	FunTV funTV = new FunTV();
+	public SignalResouce() {
+		getUiDevice = OriginTestCase.uiDevice;
+		
+	}
+	
+	/*获取父节点下的子节点个数
+	 * 方法：getChildCount(String resID)
+	 * 作者：liujia
+	 * 返回值：int
+	 * 注意：resID为父节点的resID
+	 */
+	public int getChildCount(String ParentResID) throws UiObjectNotFoundException {
+		int childCount = 0;
+		try {
+			UiObject getChild = new UiObject(new UiSelector().resourceId(ParentResID));
+			childCount = getChild.getChildCount();
+		} catch (UiObjectNotFoundException e) {
+			System.out.println(e.toString());
+			Common.writeBug("failed!check again for getChildCount() method");// TODO: handle exception
+		}
+		return childCount;
+		
+	}
+	
+	/*点进入任意指定信号源下
+	 * 函数名：切换信号源并点击进入
+	 * 作者：刘佳
+	 * 返回值：null
+	 */
+	public void enterSignal(String signal) throws UiObjectNotFoundException {
+		Common.press(260, 3000);
+		Common.pressDPadUp();
+		Common.pressDPadLeft("5");
+		UiObject countSignal = new UiObject(new UiSelector().resourceId(Signal_Const.id.signalWindow));
+		if (countSignal.getChildCount() == 6) {
+			if ("数字信号".equalsIgnoreCase(signal)) {
+				Common.pressDPadCenter(5000);
+				
+			}
+			if ("模拟信号".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight();
+				Common.pressDPadCenter(5000);
+			}
+			if ("视频".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight("2");
+				Common.pressDPadCenter(3000);
+			}
+			if ("分量".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight("3");
+				Common.pressDPadCenter(3000);
+			}
+			if ("HDMI1".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight("4");
+				Common.pressDPadCenter(3000);
+				
+			}
+			if ("HDMI2".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight("5");
+				Common.pressDPadCenter(3000);
+			}
+		} else {
+			if ("数字信号".equalsIgnoreCase(signal)) {
+				Common.pressDPadCenter(6000);
+				
+			}
+			if ("模拟信号".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight();
+				Common.pressDPadCenter(6000);
+			}
+			if ("视频".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight("2");
+				Common.pressDPadCenter(3000);
+			}
+			if ("分量".equalsIgnoreCase(signal)) {
+				Common.pressDPadRight("3");
+				Common.pressDPadCenter(3000);
+			}
+			if ("HDMI1".equalsIgnoreCase(signal)) {
+				Common.pressDPadDown();	
+				Common.pressDPadCenter(3000);
+			}
+			if ("HDMI2".equalsIgnoreCase(signal)) {
+				Common.pressDPadDown();
+				Common.pressDPadRight();
+				Common.pressDPadCenter(3000);
+			}
+			if ("HDMI3".equalsIgnoreCase(signal)) {
+				Common.pressDPadDown();
+				Common.pressDPadRight("2");
+				Common.pressDPadCenter(3000);
+			}
+			if ("VGA".equalsIgnoreCase(signal)) {
+				Common.pressDPadDown();
+				Common.pressDPadRight("2");
+				Common.pressDPadCenter(3000);
+			}
+			
+
+		}
+		
+		
+	}
+	
+	
+	/*通过log筛选对应的关键字，从而获取当前所进入的信号源id
+	 * 函数名：筛选log
+	 * 作者：刘佳
+	 * 返回值：curInputSource
+	 * 说明：筛选log时，只能将需要筛选的log用正则表达式来进行筛选，自动化logcat中无法通过-s |grep等方法进行筛选，请注意编写正确的
+	 * 正则表达式规则！！参数为正则表达式，一般筛选信号源进入log的正则为(.*curInputSource is\\s+\\:(\\d+).*)
+	 */
+	public String FilterLog(String complieWord) throws IOException, InterruptedException {
+		Log.d("liujia", "begin to filter log to get curInputSource");
+
+		String cmd = "logcat -s RootActivity -d";
+		Log.d("liujia", cmd);
+		Process getLog = Runtime.getRuntime().exec(cmd);
+		//getLog.waitFor();
+		// getLog.wait(5000);
+		String curInputSource = "";
+		try {
+			InputStream log = getLog.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(log));
+			Log.d("liujia", "begin to compile");
+			String logLine;
+			long beginTimes = System.currentTimeMillis();//add timeout
+			while ((System.currentTimeMillis()- beginTimes < 10000) &&(logLine = reader.readLine()) != null) {
+				//Log.d("liujia", "line :"+logLine);
+				Pattern pattern = Pattern.compile(complieWord);
+				Matcher m = pattern.matcher(logLine);
+				boolean mResult = m.matches();
+				if (mResult) {
+					Log.d("liujia", " compile log." + logLine + "," + curInputSource + "," + m.group(1));
+					curInputSource = m.group(1);
+					break;
+				}
+			}
+			
+		} catch (Exception e) {
+			Log.d("liujia", "crash");
+			System.out.println(e.toString());// TODO: handle exception
+		}
+		return curInputSource;
+		
+	}
+	
+	/*检查点击是否进入对应的信号源页面
+	 * 函数名：检查前一个方法中从log拿到的curInputSource值是否对应：
+	 * DTV:28;ATV:1;视频:2;分量:16;HDMI1:23;HDMI2:24;VGA:0;
+	 * 作者：刘佳
+	 * 返回值：true or false
+	 * 注意：此方法必须在用过上面两个方法后才能使用，SwitchCusor() &FilterLog(),因此此方法中的参数是从上面传进来的
+	 */
+	public boolean CheckSignalResource(String currentName,String curInputSource) {
+		if ("数字信号".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("28")) {
+				return true;
+				
+			}
+			else {
+				assertTrue("enter wrong signal for DTV current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		if ("模拟信号".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("1")) {
+				return true;
+				
+			}
+			else {
+				assertTrue("enter wrong signal for ATV current signal is: "+ curInputSource, false);
+				return false;
+			}
+			
+		}
+		if ("视频".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("2")) {
+				return true;
+				
+			}
+			else {
+				assertTrue("enter wrong signal for AV current signal is: "+ curInputSource, false);
+				return false;
+			}
+			
+		}
+		if ("分量".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("16")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for 分量 current signal is: "+ curInputSource, false);
+				return false;
+			}
+			
+		}
+		if ("HDMI1".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("23")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for HDMI1 current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		if ("HDMI2".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("24")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for HDMI2 current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		if ("VGA".equalsIgnoreCase(currentName)) {
+			if (curInputSource.equalsIgnoreCase("0")) {
+				return true;
+			}
+			else {
+				assertTrue("enter wrong signal for VGA current signal is: "+ curInputSource, false);
+				return false;
+			}
+		}
+		return false;
+		
+	}
+	
+	/*检查一个字符串是否在已有的数组中存在
+	 *函数名：checkStringExist
+	 *作者：liujia
+	 *返回值：ture or false，并会在log中输出所有的menu按键，因为无法判断当前有信号还是无信号，有EPG还是无EPG
+	 */
+	public boolean checkStringExist(String string,String[] list){
+		System.out.println("checkStringExist---------------------->");
+		boolean isExist = false;
+		try {
+			if (Arrays.asList(list).contains(string)) {
+				isExist = true;
+				System.out.println(string + " existed!");
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			// TODO: handle exception
+		}
+		return isExist;
+	}
+	
+	/*检查所有信号源下menu按键点击后各个功能按键
+	 * 函数名：MenuButton
+	 * 作者：liujia
+	 * 返回值：当前进入信号源下menu菜单中所有的选项数组列表,menuList[],可以在需要的用例中直接去拿这个数组中的值，来点击不同的menu按键
+	 * 注意：方法中的第二个参数CheckSignalResourceResult，为另一个方法CheckSignalResource的返回值，目的在于：
+	 * 先确认正确进入了用例中要求的信号源，再点击menu按键匹配不同的menu功能
+	 */
+	public String[] MenuButton(String SignalName,boolean CheckSignalResourceResult) throws UiObjectNotFoundException{
+		if ("数字信号".equalsIgnoreCase(SignalName) && CheckSignalResourceResult) {
+			String[] menuList = null;
+			try {
+				UiObject findNum = new UiObject(new UiSelector().resourceId(Signal_Const.id.DTVMenuParent));
+				int num = findNum.getChildCount();
+				menuList = new String[num];
+				Log.d("liujia", "DTV menu num: " +Integer.toString(num));
+				String menu1 = "";
+				for (int i = 0; i < num; i++) {
+					UiObject findRelativeLayout = findNum.getChild(new UiSelector().index(i));
+					Log.d("liujia", "DTV findRelativeLayout "+ Boolean.toString(findRelativeLayout.exists()));
+					sleep(2000);
+					UiObject findTextView = findRelativeLayout.getChild(new UiSelector().index(1));
+					Log.d("liujia", "DTV findTextView " + Boolean.toString(findTextView.exists()));
+					sleep(2000);
+					String menu2 = findTextView.getText();
+					Log.d("liujia", "DTV menu2: " + menu2);
+					if (!menu2.equalsIgnoreCase(menu1)) {
+						menuList[i] = menu2;
+						menu1 = menu2;
+					}
+				}
+				Log.d("liujia", Integer.toString(menuList.length));
+			} catch (UiObjectNotFoundException e) {
+				System.out.println(e.toString());// TODO: handle exception
+				Common.writeBug("failed,check again for MenuButton() method!");// TODO: handle exception
+			}
+			
+			return menuList;
+		}
+		if("模拟信号".equalsIgnoreCase(SignalName) && CheckSignalResourceResult){
+			String[] menuList = null;
+			try {
+				UiObject findNum = new UiObject(new UiSelector().resourceId(Signal_Const.id.DTVMenuParent));
+				int num = findNum.getChildCount();
+				menuList = new String[num];
+				Log.d("liujia", "ATV menu num: " +Integer.toString(num));
+				String menu1 = "";
+				for (int i = 0; i < num; i++) {
+					UiObject findRelativeLayout = findNum.getChild(new UiSelector().index(i));
+					Log.d("liujia", "ATV findRelativeLayout "+ Boolean.toString(findRelativeLayout.exists()));
+					sleep(2000);
+					UiObject findTextView = findRelativeLayout.getChild(new UiSelector().index(1));
+					Log.d("liujia", "ATV findTextView " + Boolean.toString(findTextView.exists()));
+					sleep(2000);
+					String menu2 = findTextView.getText();
+					Log.d("liujia", "ATV menu2: " + menu2);
+					if (!menu2.equalsIgnoreCase(menu1)) {
+						menuList[i] = menu2;
+						Log.d("liujia", i + " " + menuList[i]);
+						menu1 = menu2;
+					}
+				}
+				Log.d("liujia", Integer.toString(menuList.length));
+			} catch (UiObjectNotFoundException e) {
+				System.out.println(e.toString());// TODO: handle exception
+				Common.writeBug("failed,check again for MenuButton() method!");// TODO: handle exception
+			}
+			
+			return menuList;
+		}
+		
+		if ("视频".equalsIgnoreCase(SignalName) && CheckSignalResourceResult) {
+			String[] menuList = null;
+			try {
+				UiObject menuTitle = new UiObject(new UiSelector().resourceId(Signal_Const.id.playSetting));
+				if (menuTitle.getText().equalsIgnoreCase("播放设置")) {
+					UiObject getMenuItem = new UiObject(new UiSelector().resourceId(Signal_Const.id.playSettingForHDMI));
+					int menuNum = getMenuItem.getChildCount();
+					Log.d("liujia", SignalName +" " +"menu num: " + Integer.toString(menuNum));
+					String menuItem1 = "";
+					menuList = new String[menuNum];
+					for (int j = 0; j < menuNum; j++) {
+						Log.d("liujia", "j :" +j);
+						UiObject findRelativeLayout = getMenuItem.getChild(new UiSelector().index(j));
+						sleep(2000);
+						UiObject findTextView = findRelativeLayout.getChild(new UiSelector().resourceId(Signal_Const.id.playSettingText));
+						sleep(2000);
+						
+						for(int ti = 0; ti < 3; ti++) {
+							UiObject tObj = findRelativeLayout.getChild(new UiSelector().index(ti));
+							Log.d("liujia", ti + "child :" + tObj.getText() + "," + tObj.getClassName() + "," + tObj.getBounds().toShortString());
+						}
+						
+						if (!findTextView.getText().equalsIgnoreCase(menuItem1)) {
+							menuList[j] = findTextView.getText();
+							menuItem1 = findTextView.getText();
+							Log.d("liujia", j +" " + menuList[j]);
+							sleep(2000);
+						}
+					}
+					
+				}
+			} catch (UiObjectNotFoundException e) {
+				System.out.println(e.toString());// TODO: handle exception
+				Common.writeBug("failed,check again for MenuButton() method!");
+			}
+			Log.d("liujia", "list lenght" + Integer.toString(menuList.length));
+			return menuList;
+		}
+		return null;
+		
+	}
+	
+	/*取某些text时没有resID时，需要通过先读到父节点，再去子阶段的text的方式,一般是通过index个数
+	 * 方法：getChildText()
+	 * 作者：liujia
+	 * 说明：只适用于一级子节点，就是通过找到父节点，来确定其一级子阶段的text;使用方法前需要根据uiautomator viewer来查询确定方法参数
+	 * 返回值：String
+	 */
+	public String getChildText(String parentResId,boolean status,int indexNum) throws UiObjectNotFoundException{
+		String getText = "";
+		try {
+			UiObject getParentNode = new UiObject(new UiSelector().resourceId(parentResId).selected(status));
+			int childNum = getParentNode.getChildCount();
+			for (int i = 0; i < childNum; i++) {
+				UiObject childNode = getParentNode.getChild(new UiSelector().index(i));
+				Log.d("liujia", i + childNode.getText());
+			}
+			UiObject childNode = getParentNode.getChild(new UiSelector().index(indexNum));
+			getText = childNode.getText();
+			Log.d("liujia", "indexNum :" + childNode.getText());
+		} catch (UiObjectNotFoundException e) {
+			System.out.println(e.toString());// TODO: handle exception
+			 Common.writeBug("failed,check again for getChildText() method!");
+		}
+		
+		return getText;
+	}
+	
+	/*切换选择不同的功能的不同设置项
+	 * 方法：chooseOption(String[] list,String currentOption)
+	 * 作者：；liujia
+	 * 返回值：true or false
+	 * 说明：方法用于切换不同的选项，可用在设置项中；需要提前给出包含的所有设置项在数组[]中，给出当前的设置项，然后对比当前的设置项是否属于数组；
+	 * 使用过程中可以多次使用，来确认每次操作后的选项是否都属于期望结果中，当结果都为true时，用例通过
+	 */
+	public boolean chooseOption(String[] list,String currentOption){
+		boolean result = false;
+		if (list.length != 0) {
+			for (int i = 0; i < list.length; i++) {
+				if (list[i].equalsIgnoreCase(currentOption)) {
+					result = true;
+				}
+			}
+		}
+		return result;
+	}
+	
+	/*对比两个数组是否相等，一般用于期望结果的数组和实际拿到的结果数组是否一致，一致表示设置项都被选择到，正确
+	 * 方法：compareArray(String[] expect,String[] actual)
+	 * 作者：liujia
+	 * 注释：包含有多个选项的设置项检查时，一般使用两个数组的对比来检查一致性，所需的期望结果数组基本已在Signal_Const.java文件中定义，只需自己生成实际结果的数组
+	 * 生成数组方法如下：一定要先定义数组的长度，注意使用Uiobject中getChildCount方法来计算
+	 * String[] actual = new String[num];
+	 * actual[i] = value;
+	 * 返回值：true or false
+	 */
+	public boolean compareArray(String[] expect,String[] actual){
+		boolean compareResult = false;
+		int compareCount = 0;
+		if (expect.length == actual.length) {
+			for (int i = 0; i < expect.length; i++) {
+				for (int j = 0; j < actual.length; j++) {
+					if (expect[i].equalsIgnoreCase(actual[j])) {
+						compareCount++;
+						break;
+					}
+				}
+				if (compareCount ==expect.length) {
+					compareResult = true;
+				}
+			}
+		}
+		return compareResult;
+	}
+
+
+	
+	
+	/*16.9.2 重新修改信号源下所有方法
+	 * 功能方法：切换画面比例,拿取当前的value值，如果与期望结果不符，则点击左键切换选项，再进行结果比对，当相同时，截图并退出
+	 * 参数ratioValue:16 : 9（默认）,全真模式,4 : 3,这里一定要从这里copy,注意字符之间有空格，自己随便输入的话会不断在循环！！
+	 * 返回值：无(需求确认，这里要什么返回值给用例中使用？)
+	 * 注意：截图时的文件名不能使用符号，所有不能用value值命名，需要自定义给出
+	 */
+	public void changeAspectRatio(String ratioValue) throws UiObjectNotFoundException {
+		try {
+			Log.d("liujia", "start doing this!");
+			String aspectRatioTitle = getChildText(Signal_Const.id.aspectRatioID, true, 1);
+			Log.d("liujia", aspectRatioTitle);
+			if (aspectRatioTitle.equalsIgnoreCase("画面比例")) {
+				while (true) {
+					String ratioCurrentValue = getChildText(Signal_Const.id.ratioValue, true, 0);
+					Log.d("liujia", ratioCurrentValue);
+					if (!"".equals(ratioCurrentValue)) {
+						if (ratioCurrentValue.equalsIgnoreCase(ratioValue)) {
+							Common.screenCap();
+							sleep(4000);
+							break;
+						}
+					Common.pressDPadLeft();
+				}
+					
+				}
+			}
+			else {
+				Log.d("liujia", "bug!!the first settings is not the aspectRatio");
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());// TODO: handle exception
+			Common.writeBug("signalresoucre - changeAspectRatio method failed!");
+		}
+		Common.pressBack();//cancel menu display
+	}
+	
+	
+	/*功能方法：切换图像模式
+	 * 图像模式：标准模式、柔和模式、艳丽模式、自定义模式
+	 * 参数说明：currentSignal为当前测试的信号源；modelName为想要切换到的图像模式参数；
+	 * 返回值：null
+	 * 注意：当前DTV/ATV和其他信号源要区分开来，音效播放设置菜单显示的入口不是同一级的
+	 */
+	public void changeImageModel(String currentSignal,String modelName){
+		if (currentSignal.equalsIgnoreCase("数字信号") || currentSignal.equalsIgnoreCase("模拟信号")) {
+			Common.pressMenu();
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+			Common.pressDPadDown();
+			try {
+				String imageModelTitle = getChildText(Signal_Const.id.imageModelID, true, 1);
+				Log.d("liujia", imageModelTitle);
+				if (imageModelTitle.equalsIgnoreCase("图像模式")) {
+					String imageModelValue = "";
+					while (!imageModelValue.equalsIgnoreCase(modelName)) {
+						Common.pressDPadCenter(2000);
+						if (modelName.equalsIgnoreCase("艳丽模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadDown("2");
+							Common.pressDPadCenter();
+						}
+						else if (modelName.equalsIgnoreCase("柔和模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadDown();
+							Common.pressDPadCenter();
+						}
+						else if (modelName.equalsIgnoreCase("自定义模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadDown("3");
+							Common.pressDPadCenter();
+							settings.modifyPicValue("colorTemp", "left", "2");
+							settings.modifyPicValue("backlight", "left", "10");
+							settings.modifyPicValue("brightness", "left", "25");
+							settings.modifyPicValue("contrast", "left", "25");
+							settings.modifyPicValue("saturation", "left", "25");
+							Common.pressBack();
+							Common.pressMenu();
+							Common.pressDPadRight();
+							Common.pressDPadCenter();
+							Common.pressDPadDown();
+							
+						}
+						else if (modelName.equalsIgnoreCase("标准模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadCenter();
+						}
+						imageModelValue = Common.getAppName(Signal_Const.id.imageModelValue);
+						
+					}
+					Common.screenCap();
+					sleep(4000);
+					//reset 自定义模式的值
+					if (imageModelValue.equalsIgnoreCase("自定义模式")) {
+						Common.pressDPadCenter();
+						Common.pressDPadCenter();
+						Common.pressDPadDown("5");
+						Common.pressDPadCenter(2000);
+						Common.pressBack();
+						Common.pressMenu();
+						Common.pressDPadRight();
+						Common.pressDPadCenter();
+						
+					}
+				
+				}
+			} catch (UiObjectNotFoundException e) {
+				System.out.println(e.toString());// TODO: handle exception
+				Common.writeBug("changeImageModel failed!");
+			}
+			Common.pressBack();//cancel menu display
+		} else {
+			Common.pressMenu();
+			Common.pressDPadDown();
+			try {
+				String imageModelTitle = getChildText(Signal_Const.id.imageModelID, true, 1);
+				Log.d("liujia", imageModelTitle);
+				if (imageModelTitle.equalsIgnoreCase("图像模式")) {
+					String imageModelValue = "";
+					while (!imageModelValue.equalsIgnoreCase(modelName)) {
+						Common.pressDPadCenter(2000);
+						if (modelName.equalsIgnoreCase("艳丽模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadDown("2");
+							Common.pressDPadCenter();
+						}
+						else if (modelName.equalsIgnoreCase("柔和模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadDown();
+							Common.pressDPadCenter();
+						}
+						else if (modelName.equalsIgnoreCase("自定义模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadDown("3");
+							Common.pressDPadCenter();
+							settings.modifyPicValue("colorTemp", "left", "2");
+							settings.modifyPicValue("backlight", "left", "10");
+							settings.modifyPicValue("brightness", "left", "25");
+							settings.modifyPicValue("contrast", "left", "25");
+							settings.modifyPicValue("saturation", "left", "25");
+							Common.pressBack();
+							Common.pressMenu();
+							Common.pressDPadDown();
+							
+						}
+						else if (modelName.equalsIgnoreCase("标准模式")) {
+							Common.pressDPadUp("5");
+							Common.pressDPadCenter();
+						}
+						imageModelValue = Common.getAppName(Signal_Const.id.imageModelValue);
+						
+					}
+					Common.screenCap();
+					sleep(4000);
+					//reset 自定义模式的值
+					if (imageModelValue.equalsIgnoreCase("自定义模式")) {
+						Common.pressDPadCenter();
+						Common.pressDPadCenter();
+						Common.pressDPadDown("5");
+						Common.pressDPadCenter(2000);
+						Common.pressBack();
+						Common.pressMenu();
+					}
+				
+				}
+			} catch (UiObjectNotFoundException e) {
+				System.out.println(e.toString());// TODO: handle exception
+				Common.writeBug("changeImageModel failed!");
+			}
+			Common.pressBack();//cancel menu display
+
+		}
+		
+		
+	}
+	
+	/*功能方法：切换音效模式
+	 * 函数名：changeSoundEffect(String soundEffect)
+	 * 变量值：soundEffect:标准模式/电影模式/音乐模式
+	 * 返回值：null
+	 */
+	public void changeSoundEffect(String soundEffect){
+		try {
+			String soundEffectTitle = getChildText(Signal_Const.id.soundEffectID, true, 1);
+			Log.d("liujia", soundEffectTitle);
+			while (soundEffectTitle.equalsIgnoreCase("音效模式")) {
+				String soundEffectValue = getChildText(Signal_Const.id.ratioValue, true, 0);
+				Log.d("liujia", soundEffectValue);
+				if (soundEffectValue.equalsIgnoreCase(soundEffect)) {
+					break;
+				}
+				Common.pressDPadLeft();
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());// TODO: handle exception
+			Common.writeBug("changeSoundEffect failed!");
+		}
+		Common.pressBack();
+	}
+	
+	/*功能方法：切换音轨，只有DTV下有
+	 * 函数名：changeAudioTrack(String audioTrack)
+	 * 变量值：在DTV播放设置中存在音轨设置项，且默认又一个设置项"音轨1"，其他的选项是动态选择的,因此方法只能实现音轨的切换，没有指定切换到哪个音轨，当切换到初始值时停止切换
+	 * 返回值：null
+	 */
+	public void changeAudioTrack(){
+		Common.pressMenu();
+		Common.pressDPadRight();
+		Common.pressDPadCenter();
+		Common.pressDPadDown("3");
+		try {
+			String audioTrackTitle = getChildText(Signal_Const.id.audioTrackID, true, 1);
+			Log.d("liujia", audioTrackTitle);
+			if (audioTrackTitle.equalsIgnoreCase("音轨")) {
+				String audioOrigin = getChildText(Signal_Const.id.ratioValue, true, 0);
+				while (true) {
+					Common.pressDPadLeft();
+					String audioTrackValue = getChildText(Signal_Const.id.ratioValue, true, 0);
+					if (audioOrigin.equalsIgnoreCase(audioTrackValue)) {
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());// TODO: handle exception
+			Common.writeBug("DTV changeAudioTrack failed!");
+		}
+		Common.pressBack();
+	}
+	
+	/*功能方法：切换字幕，只有DTV下有
+	 * 函数名：changeCaption
+	 * 变量值：无；因为字幕是动态变化的，根据码流决定，只实现切换，不指定切换到哪个具体的字幕，当切换回初始值时停止
+	 * 返回值：null
+	 */
+	public void changeCaption() {
+		Common.pressMenu();
+		Common.pressDPadRight();
+		Common.pressDPadCenter();
+		Common.pressDPadDown("4");
+		try {
+			String captionTitle = getChildText(Signal_Const.id.captionID, true, 1);
+			Log.d("liujia", captionTitle);
+			if (captionTitle.equalsIgnoreCase("字幕")) {
+				String captionOrigin = getChildText(Signal_Const.id.ratioValue, true, 0);
+				while (true) {
+					Common.pressDPadLeft();
+					String captionValue = getChildText(Signal_Const.id.ratioValue, true, 0);
+					if (captionValue.equalsIgnoreCase(captionOrigin)) {
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());// TODO: handle exception
+			Common.writeBug("DTV changeCaption failed!");
+		}
+		Common.pressBack();
+	}
+	
+	/*功能方法：频道搜索,可以实现两个入口的搜索频道功能的检查，1）没有任何频道时，点击menu按键，默认在频道搜索按钮；有频道存在时，通过进入频道编辑，选择频道搜索
+	 * 函数名：searchChannel
+	 * 注意：试用与atv、dtv下，但不能在首次进入自动搜索的状态，需要在使用前手动结束自动搜索的状态
+	 * 返回值：null
+	 */
+	public void searchChannel() throws UiObjectNotFoundException{
+		Common.pressMenu();
+		int menuNum = getChildCount(Signal_Const.id.DTVMenuParent);
+		Log.d("liujia", Integer.toString(menuNum));
+		if (menuNum > 2) {
+			Common.pressDPadCenter();
+			Common.pressDPadDown();
+			String searcheChannelTitle = getChildText(Signal_Const.id.searchChannel, true, 1);
+			if (searcheChannelTitle.equalsIgnoreCase("频道搜索")) {
+				Common.pressDPadCenter(3000);
+				Common.screenCap();
+				sleep(4000);
+			}
+		} else {
+			Common.pressDPadCenter(3000);
+			Common.screenCap();
+			sleep(4000);
+		}
+	}
+	
+	/*功能方法：查看预告
+	 * 函数名：checkPrediction()
+	 * 注意：需要先确认预告选项是否存在,然后才能点击查看
+	 * 返回值：null
+	 */
+	public void checkPrediction() {
+		Common.pressMenu();
+		try {
+			UiObject checkPredictionID = new UiObject(new UiSelector().resourceId(Signal_Const.id.predictionID));
+			if (checkPredictionID.exists()) {
+				Log.d("liujia", "find prediction option!");
+				Common.pressDPadRight("2");
+				Common.pressDPadCenter(2000);
+				Common.screenCap();
+				sleep(4000);
+				UiObject moreButton = new UiObject(new UiSelector().resourceId(Signal_Const.id.predictionButton));
+				if (moreButton.exists()) {
+					Log.d("liujia", "find more button");
+					Common.pressDPadCenter(2000);
+					Common.pressBack();
+				}
+			}
+			Common.pressBack();
+		} catch (Exception e) {
+			System.out.println(e.toString());// TODO: handle exception
+			System.out.println("can not find prediction button");
+		}
+		
+	}
+	
+	/*虚拟键盘切换存在的频道
+	 * 函数：switchByKeyboard
+	 * 注意：首先要判断当前存在的频道数目，如果存在个数>1,才能够使用；请确保一定有台搜到;方法是从显示频道列表开始的
+	 * 返回值：String，当前频道号
+	 */
+	public String switchByKeyboard() throws UiObjectNotFoundException {
+		String switchID = "";
+		String switchName = "";
+		try {
+			Common.pressDPadCenter();//display channel list,and then judge if there's anthoer channel exist
+			UiObject findOtherChannel = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelListID));
+			if (findOtherChannel.getChildCount() > 1) {
+				Common.pressDPadDown();
+			}
+			else if(findOtherChannel.getChildCount() == 1) {
+				Log.d("liujia", "only one channel");		
+			}
+			switchID = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelID).selected(true)).getText();
+			Log.d("liujia", switchID);
+			switchName = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelName).selected(true)).getText();
+			Log.d("liujia", switchName);
+			int hundreds = Integer.parseInt(switchID) / 100;
+			Log.d("liujia", Integer.toString(hundreds));
+			int tens = (Integer.parseInt(switchID) - hundreds*100) / 10;
+			Log.d("liujia", Integer.toString(tens));
+			int units = Integer.parseInt(switchID) - hundreds*100 - tens*10;
+			Log.d("liujia", Integer.toString(units));
+			Common.pressBack();
+			Common.pressMenu();
+			Common.pressDPadRight("4");//switch to last option
+			Common.pressDPadCenter();//open keyboard
+			Common.clickText(Integer.toString(hundreds));
+			Common.clickText(Integer.toString(tens));
+			Common.clickText(Integer.toString(units));
+			Common.clickText("OK");
+			sleep(4000);
+		} catch (UiObjectNotFoundException e) {
+			System.out.println(e.toString());// TODO: handle exception
+			Log.d("liujia", "no channel!");
+		}
+	
+		return switchID;
+	}
+	
+	/*删除频道，适用于DTV/ATV
+	 * 函数名：deleteChannel()
+	 * 返回值：String，返回已删除的频道号
+	 * 注意：必须要在已搜到台的前提下使用
+	 */
+	public boolean deleteChannel() throws UiObjectNotFoundException{
+		boolean deleteResult = false;
+		String originID = "";
+		String channelEdit = "";
+		try {
+			Common.pressDPadCenter();
+			UiObject findOtherChannel = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelListID));
+			if (findOtherChannel.getChildCount() > 1) {
+				originID = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelID).selected(true)).getText();
+				Log.d("liujia", originID);
+				Common.pressBack();
+				Common.pressMenu();
+				Common.pressDPadCenter();//enter channel edit
+				channelEdit = new UiObject(new UiSelector().resourceId(Signal_Const.id.playSettingText).selected(true)).getText();
+				if (channelEdit.equalsIgnoreCase("频道移除")) {
+					Common.pressDPadCenter();//delete
+					sleep(2000);
+					Common.pressDPadCenter();//display channel list
+					String currentID = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelID).selected(true)).getText();
+					if (!currentID.equalsIgnoreCase(originID)) {
+						deleteResult = true;
+						Common.pressBack();//cancel list display
+					}
+				}
+			} else {
+				Log.d("liujia", "only one channel now!");
+				originID = new UiObject(new UiSelector().resourceId(Signal_Const.id.channelID).selected(true)).getText();
+				Log.d("liujia", originID);
+				
+				
+			}
+		} catch (UiObjectNotFoundException e) {
+			System.out.println(e.toString());// TODO: handle exception
+			Common.writeBug("delete first channel failed! case failed");
+			Common.pressBack();
+			Common.pressMenu();
+			Common.pressDPadCenter();//enter channel edit
+			channelEdit = new UiObject(new UiSelector().resourceId(Signal_Const.id.playSettingText).selected(true)).getText();
+			if (channelEdit.equalsIgnoreCase("频道移除")) {
+				Common.pressDPadCenter();//delete
+				sleep(4000);
+				deleteResult = new UiObject(new UiSelector().resourceId(Signal_Const.id.noSignal)).exists();			
+			}
+			
+		}
+		return deleteResult;
+	}
+	
+	/*VGA设置：在VGA信号源下menu菜单中存在VGA设置选项
+	 * 函数名：VGASetting()
+	 * 参数：itemName-具体的调节项目；direction-按键点击的方向；value-按键点击的次数
+	 * VGA下itemName包括：auto-自动调节；horizontal-水平位置；vertical-垂直位置；pixel-像素时钟；phase-相位
+	 * direction:left & right
+	 * 返回值：null
+	 */
+	public void VGASetting(String itemName,String direction,String value) {
+		Common.pressDPadUp("5");
+		if (itemName.equalsIgnoreCase("auto")) {
+			Common.pressDPadCenter(2000);
+			Common.screenCap();
+			sleep(4000);
+		}else if (itemName.equalsIgnoreCase("horizontal")) {
+			Common.pressDPadDown();		
+		}else if (itemName.equalsIgnoreCase("vertical")) {
+			Common.pressDPadDown("2");
+		}else if (itemName.equalsIgnoreCase("pixel")) {
+			Common.pressDPadDown("3");
+		}else if (itemName.equalsIgnoreCase("phase")) {
+			Common.pressDPadDown("4");
+		}else {
+			assertTrue("input wrong itemName to adjust!", false);
+		}
+		if (!itemName.equalsIgnoreCase("auto")) {
+			if (direction.equalsIgnoreCase("right")) {
+				Common.pressDPadRight(value);
+				Common.screenCap();
+				sleep(4000);
+			}else if (direction.equalsIgnoreCase("left")) {
+				Common.pressDPadLeft(value);
+				Common.screenCap();
+				sleep(4000);
+			}else {
+				assertTrue("input wrong direction,must left or right",false);
+			}
+		}
+		Common.pressBack();
+	}
+	
+
+ 
+}

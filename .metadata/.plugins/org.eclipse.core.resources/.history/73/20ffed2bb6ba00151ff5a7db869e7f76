@@ -1,0 +1,27 @@
+package java_automator_test;
+
+import java.io.IOException;
+import android.os.RemoteException;
+
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiScrollable;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+public class TestClass extends UiAutomatorTestCase {
+	public void testDemo() throws UiObjectNotFoundException {
+		getUiDevice().pressHome();
+		sleep(2000);
+		//UiObject find_filemanagerObject = new UiObject(new UiSelector().)
+		try{
+			Runtime.getRuntime().exec("am start -n tv.fun.filemanager/.MainActivity");
+			System.out.println("open the filemanager!");
+		}catch(Exception e){
+			System.out.println(e.toString());
+		}
+	}
+
+	
+	
+}

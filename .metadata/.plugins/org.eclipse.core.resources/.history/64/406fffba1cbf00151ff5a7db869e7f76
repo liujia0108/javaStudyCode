@@ -1,0 +1,91 @@
+package java_automator_test;
+
+import java.io.IOException;
+import java.io.FileNotFoundException;
+
+import android.os.RemoteException;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.view.KeyEvent;
+import android.widget.ListView;
+import android.widget.Switch;
+
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiScrollable;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+import android.util.Log;//can print log in ddms
+
+
+public class TestClass extends UiAutomatorTestCase {
+	public void testDemo() throws UiObjectNotFoundException, IOException {
+		getUiDevice().pressHome();
+		sleep(2000);
+//		Log.e(tag, msg)
+		//UiObject find_filemanagerObject = new UiObject(new UiSelector().)
+		try{
+			Process pro = Runtime.getRuntime().exec("am start -n tv.fun.filemanager/.MainActivity");
+			//sleep(3000);
+			int exitValue = pro.waitFor();
+			System.out.println("exitValue=" + exitValue);
+			System.out.println("test case1:open the filemanager,pass!");
+		}catch(Exception e){
+			System.out.println(e.toString());
+		}
+		//test
+		/*
+		try{
+			FileWriter output = new FileWriter("D:\\personal\\test.txt");
+			BufferedWriter bf = new BufferedWriter(output);
+			bf.write("测试");
+			bf.flush();
+			bf.close();
+		}catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		*/
+		
+		while (true){
+			UiObject get_item_name = new UiObject(new UiSelector().resourceId("tv.fun.filemanager:id/title_item_name"));
+			//byte[] current_item_name = get_item_name.getText().getBytes("utf-8");
+			//String aString = current_item_name.toString();
+			String current_item_name = get_item_name.getText();
+			//Log.d("liujia", "中文测试");
+			Log.d("liujia", current_item_name);
+			
+			String expect1 = "视频";
+			byte[] utf8test = expect1.getBytes("utf-8");
+			System.out.print(new String(utf8test,"utf-8"));
+			//Log.d("liujia", expect1);
+			
+			//String class_name = get_item_name.getClassName();
+			//debug print
+			//System.out.println("get name is:" + aString);
+			//System.out.println("class name:" + class_name);
+			if (current_item_name.equalsIgnoreCase(expect1)){
+				Log.d("liujia", "循环:" + current_item_name);
+				System.out.println("selected tab by video!");
+				break;
+			}
+			else{
+				getUiDevice().pressDPadRight();
+			}
+				
+			}
+		
+		}
+			
+		
+	}
+
+	

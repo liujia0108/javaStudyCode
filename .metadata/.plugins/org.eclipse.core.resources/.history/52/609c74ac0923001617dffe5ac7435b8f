@@ -1,0 +1,46 @@
+package remotecontroller;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+
+import libs.Common;
+import libs.RemoteController;
+
+public class TestCase333 extends libs.OriginTestCase{
+	public void testCase333() throws UiObjectNotFoundException{
+		boolean checkDetail = false;
+		boolean backLauncher = false;
+		RemoteController remoteControllernew = new RemoteController();
+		Common.pressDPadDown(1000);
+		Common.pressDPadCenter(3000);//enter to movie type
+		Common.pressDPadDown(1000);
+		Common.pressDPadCenter(5000);//get the open time for detail page 
+		checkDetail = remoteControllernew.resIdExist("com.bestv.ott:id/discripse", true);
+		if (checkDetail) {
+			boolean checkPlay = false;
+			String videoName= remoteControllernew.getTitle("com.bestv.ott:id/detail_title");
+			sleep(2000);
+			Common.pressDPadCenter(20000);//play 20S,if have advertisment
+			Common.pressDPadCenter();//suspend
+			checkPlay = remoteControllernew.resIdExist("com.bestv.ott:id/video_player_title");
+			if (checkPlay) {
+				Common.pressDPadCenter(2000);
+				Common.pressHome(5000);
+				backLauncher = remoteControllernew.resIdExist("com.bestv.ott:id/poster", true);
+				if (backLauncher) {
+					Log.d("liujia", "case1-330 passed!");
+				} else {
+					Log.d("liujia", "case1-330 failed!");
+					Common.writeBug("case1-330 failed!");
+				}
+			}
+		} else {
+			Log.d("liujia", "case1-330 failed,video can not play");
+			Common.writeBug("case1-330 failed,video can not play");
+
+		}
+	}
+
+	
+	
+}

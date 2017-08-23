@@ -1,0 +1,77 @@
+/*
+ * [点亮用例][1-315]单击点击音量加减(短按调节音量)
+ * 步骤：
+ * 1.在launcher中播放任意在线视频，在播放过程中点击音量加减一次，记住当前音量
+ * 2.再次点击一次，记录当前音量值，查看是否有改变
+ * 3.多次点击音量加/减，查看音量值的改变
+ * 期望结果：
+ * 音量值正常改变
+ * 注意：
+ * 当前通过即时log：logcat | grep 'update volume db'来拿取音量值；
+ * 下一步再考虑实现从数据库（638）/xml文件（938）中拿取音量值
+ */
+package scripts.remotecontroller;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import android.util.Log;
+
+public class TestSomkeCase315 extends libs.OriginTestCase{
+
+	public void testSomkeCase315() throws IOException, InterruptedException {
+		Common.pressHome();
+		String currentPlatform = "";
+		currentPlatform = Common.getPlatform();
+		Log.d("liujia", "currentPlatform :"+currentPlatform);
+		if (currentPlatform.equalsIgnoreCase("938")) {
+			String XMLPath = "/data/system/users/0/settings_system.xml";
+			String xmlContent = "";
+			Common.do_exec("logcat -c");
+			Common.pressVolDown();//音量减
+			//volumeLog = Common.compileLog(".*volume.*db.*\\=\\s*(\\d+).*", "logcat | grep 'update volume db'");
+			//volumeLog = Common.exec("logcat | grep 'update volume db'");
+			xmlContent = Common.XMLreader(XMLPath);
+			Log.d("liujia", "xmlContent: "+xmlContent);
+		}else if (currentPlatform.equalsIgnoreCase("638")) {
+			String SQLpath = "/tvdatabase/Database/";
+			String SQLname = "user_setting.db";
+			String cmd = "sqlite3 "+SQLpath+SQLname +" 'select Volume from tbl_SoundSetting;'";
+			Log.d("liujia", cmd);
+			BufferedReader reader = null;
+			String log = "";
+			Runtime runtime = Runtime.getRuntime();
+			try {
+				
+				Process execCmd1 = runtime.exec("sqlite3 /tvdatabase/Database/user_setting.db\nselect Volume from tbl_SoundSetting;\n.exit\n");
+				Log.d("liujia", "11111111111111");
+//				Process execCmd = runtime.exec("select Volume from tbl_SoundSetting;");
+//				execCmd.waitFor();
+				InputStream input = execCmd1.getInputStream();
+				reader = new BufferedReader(new InputStreamReader(input));
+				log = reader.readLine();
+				Log.d("liujia", "log: " + log);
+				while (log != null) {
+					log = reader.readLine();
+					Log.d("liujia", "log while:"+log);
+				}
+			
+			} catch (Exception e) {
+				System.out.println(e.toString());
+				// TODO: handle exception
+			}
+			
+			
+			
+			
+			
+			
+			//Log.d("liujia", "638 volumeLog: "+volumeLog);
+		}
+	}
+}

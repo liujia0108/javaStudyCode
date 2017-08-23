@@ -1,0 +1,237 @@
+#encoding:utf-8
+'''
+Created on 2015年10月5日
+
+@author: gjb
+'''
+import os
+import sys
+import platform
+import os.path # search?
+import datetime
+import subprocess
+#import ConfigParser
+import time
+from pychartdir import * #search ?
+import smtplib
+from email.mime.image import MIMEImage # ?
+from email.MIMEText import *   #?
+from email.MIMEMultipart import *
+import ConfigParser
+import glob
+import shutil
+
+history_file=r"./history.cs"
+
+def files(curr_dir = '.', ext = '*.png'):
+    for i in glob.glob(os.path.join(curr_dir, ext)):
+        yield i
+        
+def remove_files(rootdir, ext, show = False):
+    for i in files(rootdir, ext):
+        if show:
+            print i
+        os.remove(i)
+
+def move_files(rootdir, ext, destdir):
+    for i in files(rootdir, ext):
+        shutil.move(i, os.path.join(destdir,os.path.basename(i)))
+        
+#执行shell命令
+def run_cmd(cmd):
+    process = subprocess.Popen(cmd , shell = True, stdout=subprocess.PIPE)
+    return process.stdout.read().strip()
+
+#获取所有文件
+def pull_tracefile():
+    dateNow= datetime.datetime.now().strftime("%Y%m%d")
+    print dateNow    
+    
+    if not os.path.exists("./results/%s"%dateNow):
+        os.mkdir("./results/%s"%dateNow)
+        
+    run_cmd("adb shell ls /sdcard/*.trace | tr '\r' ' ' | xargs -n1 adb pull")
+    move_files('.', '*.trace', './results/%s'%dateNow)    
+
+def get_elapsedtime():
+    dateNow= datetime.datetime.now().strftime("%Y%m%d")
+    for i in files('./results/%s'%dateNow, '*.trace'):
+        f=open(i,'r')
+        lines=f.readlines()
+        elapsed_time=''
+        for line in lines:
+            if line.find('elapsed-time-usec=')!= -1:
+                lineStr=line.strip()
+                lineStr=lineStr.replace('\r','')
+                lineStr=lineStr.replace('\n','')
+                elapsed_time=lineStr.split('=')[1]
+                break
+        f.close()
+        print elapsed_time 
+    
+        if checkTwoKeyExist(history_file,dateNow,1,os.path.basename(i).split('.')[0],2,','):
+            print "the elapsed time for %s on %s exist,update it"%(os.path.basename(i).split('.')[0],dateNow)
+            updateOneLineWithTwoKey(history_file,dateNow,os.path.basename(i).split('.')[0],3,elapsed_time)
+        else:
+            addNewLine(history_file,dateNow+','+os.path.basename(i).split('.')[0]+','+elapsed_time+',')
+
+      
+def addNewLine(filename,content):
+    f = open(filename,'a')
+    f.write(content+'\n')
+    f.close()
+
+def checkTwoKeyExist(filename,key1,pos1,key2,pos2,splitstr):
+    fread=open(filename,'r')
+    lines=fread.readlines()
+    searchRes=False
+    
+    for line in lines:
+        arr=line.split(splitstr)#seperate use splitstr
+        if (str(key1)==arr[pos1-1] and str(key2)==arr[pos2-1]):
+            searchRes=True
+            break
+    fread.close()
+    return searchRes
+
+def updateOneLineWithTwoKey(filename,searchkey1,searchkey2,index,content):
+    fread=open(filename,'r')
+    lines=fread.readlines()
+    i=0
+    findres=False
+    
+    for line in lines:
+        i+=1
+        tmp = line.split(",");
+        if ((str(searchkey1)==tmp[0]) and (str(searchkey2)==tmp[1])):
+            tmp[index-1]=str(content)
+            lines[i-1]=','.join(tmp)
+            findres=True
+            break
+                
+    fread.close()
+
+    if not findres: 
+        print "ERROR:can not update data:%s,%s,%s,%s,%s"%(filename,searchkey1,searchkey2,index,content)
+    else:
+        fwrite=open(filename,'w')
+        fwrite.writelines(lines)
+        fwrite.close()
+
+def draw_pic(tagName):
+    #获取耗费时间和日期
+    elapsed_time_arr = []
+    date_arr = []
+    f=open(history_file,'r')
+    lines=f.readlines()
+    for line in lines:
+        arr=line.split(',')
+        date_line=arr[0]    
+        tag_line=arr[1]
+        time_line=arr[2]
+        
+        if tagName==tag_line:
+            date_arr.append(date_line)
+            elapsed_time_arr.append(time_line)
+    f.close()
+    
+    #绘图
+    #if len(elapsed_time_arr)>0:
+    c = XYChart(1400, 600)
+    c.setPlotArea(50, 55, 1300, 500)
+    c.addLineLayer(elapsed_time_arr)
+    c.xAxis().setLabels(date_arr)
+    c.xAxis().setLabelStep(len(elapsed_time_arr)-1)
+    c.makeChart("%s.png"%tagName)
+
+def clean_env():
+    remove_files('.', '*.png', show = True)    
+    remove_files('.', '*.trace', show = True) 
+
+def send_mail_image(mailserver,user,password,me,mailto_list,title):
+    msg = MIMEMultipart('related')
+    msg['Subject']=title
+    msg['From']=me
+    msg['To']=';'.join(mailto_list)
+    
+    content = ""
+    content+="<html>"
+    content+="<head>"
+    content+="<meta http-equiv=Content-Type content=\"text/html;charset=gb2312\">"
+    content+="<style type=\"text/css\">"
+    content+="body {font-family:\"" + "微软雅黑".decode('UTF-8').encode('GBK') + "\",\"宋体\",\"黑体\",Arial,Tahoma,Geneva,sans-serif;}"
+    content+="table {width:90%;border:2px solid;border-collapse:collapse;}"
+    content+="th {border-width:2px;border-style:solid;border-color:black;text-align:center;width:150px;background-color:#AEEEEE;color:red;}"
+    content+="td {border-width:2px;border-style:solid;}"
+    content+="</style>"
+    content+="</head>"
+    content+="<body>"
+    
+    content += "<br/>"
+    #content+="<span><b>性能测试数据汇总:</b><span>".decode('UTF-8').encode('GBK')
+    
+    for i in files('.', '*.png'):
+        pic_name = os.path.basename(i)
+        content += "<br/>"
+        content+="<span><b>TAG:" + pic_name.split('.')[0].decode('UTF-8').encode('GBK') + "</b><span>"
+        content += "<br/>"
+
+        content += "<img src=\"cid:" + pic_name + "\" alt=\"" + pic_name + "\">"
+        content += "<br/>"
+        content += "<br/>"
+
+    
+    content+="</body>"
+    content+="</html>"
+    
+    msg.attach(MIMEText(content,_subtype='html',_charset='gb2312'))
+    
+    for i in files('.', '*.png'):
+        file_name = os.path.basename(i)
+        fp = open(i,'rb')
+        img = MIMEImage(fp.read())
+        img.add_header('Content-ID',file_name)
+        msg.attach(img)
+    
+    try:
+        ott_mail=smtplib.SMTP()
+        ott_mail.connect(mailserver)
+        ott_mail.login(user, password)
+        ott_mail.sendmail(me,mailto_list,msg.as_string())
+        ott_mail.close()
+        return True
+    except Exception,e:
+        print e
+        return False
+    
+if __name__=='__main__':
+    if not os.path.exists("./results"):
+        os.mkdir("./results")
+
+    if not os.path.exists(history_file):
+        f=open(history_file,'w')
+        f.close()
+        
+    #获取配置信息
+    cf = ConfigParser.ConfigParser()
+    cf.read('./kpimonitor.conf')
+    tagList = cf.get("tagList","tagList").split(",")
+    
+    mailserver = cf.get("mailInfo","mailserver")
+    user = cf.get("mailInfo","user")
+    password = cf.get("mailInfo","password")
+    me = cf.get("mailInfo","me")
+    mailto_list = cf.get("mailto_list","mailto_list").split(',')
+ 
+    #从电视pull trace文件
+    pull_tracefile()  
+    #从trace文件获取耗费时间  
+    get_elapsedtime()
+    #画图
+    for i in tagList:
+        draw_pic(i)
+    
+    send_mail_image(mailserver,user,password,me,mailto_list,'关键路径耗时分析-%s'%(datetime.datetime.now().strftime("%Y%m%d")))
+    
+    clean_env()
+    

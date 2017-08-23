@@ -1,0 +1,759 @@
+package libs;
+import android.util.Log;
+
+import com.android.uiautomator.core.UiDevice;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiSelector;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+public  class FunTV extends UiAutomatorTestCase{
+	public static UiDevice getUiDevice = null;
+	public FunTV() {
+		getUiDevice = OriginTestCase.uiDevice;
+	}
+	libs.Common Common = libs.OriginTestCase.Common;
+	constant.FunTV_Const FunTV_Const = OriginTestCase.FunTV_Const;
+
+	//未完成：快速切换剧集1-814
+	//        在列表里切换内容1-810
+	
+	
+	/* =======================================================================================
+	 * 函数名：     goToHome
+	 * 函数解释：回到主页
+	 * 参数：           无
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void goToHome() {
+		Common.pressBack("3");
+		Common.pressHome();
+	}
+		
+	
+
+	/* =======================================================================================
+	 * 函数名：     naviToTab
+	 * 函数解释：移动到主页相对应的TAB上
+	 * 参数：          "TV","VIDEO","SPORT","APP","SETTINGS"分别代表电视、视频、体育、应用、设置
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+
+	public void naviToTab(String tab) {
+		Common.pressHome();
+		Common.pressDPadUp();
+		String currentTabName = Common.getAppName(FunTV_Const.id.launcher_tab, true);
+		sleep(2000);
+		System.out.println("current tab name is :"+currentTabName);
+		if (tab.equalsIgnoreCase("电视")) {
+			Common.pressDPadLeft();
+		} else {
+			int i = 0;
+			while (!tab.equalsIgnoreCase(currentTabName) && i < 20) {
+				Common.pressDPadRight();
+				currentTabName = Common.getAppName(FunTV_Const.id.launcher_tab, true);
+				Log.d("liujia", "currentTabName :"+currentTabName);
+				i++;
+				
+			}
+
+		}
+		String tabName = Common.getAppName(FunTV_Const.id.launcher_tab, true);
+		if (!tabName.equalsIgnoreCase(tab)) {
+			assertTrue("wrong value about the parameter", false);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     checkTabView
+	 * 函数解释：检测当前页面是否处于相应的TAB页下
+	 * 参数：           "TV","VIDEO","SPORT","APP","SETTINGS"分别代表电视、视频、体育、应用、设置
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkTabView(String tab) {
+		if ("TV".equalsIgnoreCase(tab)) {
+			Common.AssertIdExists(FunTV_Const.id.CAROUSEL_WINDOW);
+			Common.AssertIdExists(FunTV_Const.id.SOURCE_WINDOW);
+			Common.AssertTextExists(FunTV_Const.text.CAROUSEL);
+		}
+		else if ("Video".equalsIgnoreCase(tab)) {
+			Common.AssertTextExists(FunTV_Const.text.MEMBER);
+			Common.AssertTextExists(FunTV_Const.text.MOVIE);
+			Common.AssertTextExists(FunTV_Const.text.PLAY_RECORD);
+			Common.AssertTextExists(FunTV_Const.text.VIDEO_CATEGORY);
+		}
+		else if ("SPORT".equalsIgnoreCase(tab)) {
+			Common.AssertTextExists(FunTV_Const.text.PREMIER_LEAGUE);
+			Common.AssertTextExists(FunTV_Const.text.BASKETBALL);
+			Common.AssertTextExists(FunTV_Const.text.FOOTBALL);
+		}
+		else if ("APP".equalsIgnoreCase(tab)) {
+			Common.AssertTextExists(FunTV_Const.text.APP_STORE);
+			Common.AssertTextExists(FunTV_Const.text.FILEMANAGER);
+			Common.AssertTextExists(FunTV_Const.text.TV_MASTER);
+			Common.AssertTextExists(FunTV_Const.text.MY_APP);
+		}
+		else if ("SETTINGS".equalsIgnoreCase(tab)) {
+			Common.AssertTextExists(FunTV_Const.text.COMMON_SETTINGS);
+			Common.AssertTextExists(FunTV_Const.text.ABOUT);
+			Common.AssertTextExists(FunTV_Const.text.SOUND_PICTURE);
+		} else {
+			assertTrue("wrong value about the parameter", false);
+		}
+	}	
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     openCarousel
+	 * 函数解释：进入轮播界面
+	 * 参数：           无
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void openCarousel() {
+		Common.pressHome();
+		Common.pressDPadLeft();
+		Common.pressDPadCenter();
+		int temp = 0;
+		while(Common.ifIdExists(FunTV_Const.id.CACHE_PROGRESS_BAR)){
+			temp++;
+			if (temp >= 10){
+				break;
+			}
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     checkCarouselChannel
+	 * 函数解释：检测当前轮播的频道是不是指定的频道
+	 * 参数：           num:指定的频道号码 -- "01","02","03","04"......
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkCarouselChannel(String num) {
+		Common.pressDPadCenter();
+		if (!(Common.getSelectedText().substring(0, 2).equals(num))){
+			Common.errorHandle("当前频道号和 给定的频道号不一样");
+		}
+		Common.screenCap();
+		Common.pressBack();
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     naviToMediaView
+	 * 函数解释：打开相关的媒体页
+	 * 参数：           MOVIE,TV,CHILDREN,VARIETY,VIDEO_CATEGORY,PLAY_RECORD,MEMBER,ALL分别对应：
+	 * 				电影,电视剧,少儿,综艺,视频分类,播放记录,金卡会员,视频分类
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void naviToMediaView(String name) {
+		goToHome();
+		if ("MOVIE".equalsIgnoreCase(name)) {
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}
+		else if ("TV".equalsIgnoreCase(name)) {
+			Common.pressDPadDown();
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+		}
+		else if ("CHILDREN".equalsIgnoreCase(name)) {
+			Common.pressDPadDown();
+			Common.pressDPadRight("2");
+			Common.pressDPadCenter();
+		}
+		else if ("VARIETY".equalsIgnoreCase(name)) {
+			Common.pressDPadDown();
+			Common.pressDPadRight("3");
+			Common.pressDPadCenter();
+		}
+		else if ("VIDEO_CATEGORY".equalsIgnoreCase(name)) {
+			Common.pressDPadDown();
+			Common.pressDPadRight("4");
+			Common.pressDPadCenter();
+		}
+		else if ("PLAY_RECORD".equalsIgnoreCase(name)) {
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+		}
+		else if ("MEMBER".equalsIgnoreCase(name)) {
+			Common.pressDPadRight();
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}
+		else if ("ALL".equalsIgnoreCase(name)) {
+			Common.pressDPadRight();
+			Common.pressDPadDown("2");
+			Common.pressDPadCenter();
+		} else {
+			assertTrue("wrong value about the parameter", false);
+		}
+		Common.sleep(5000);
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：     checkMediaView
+	 * 函数解释：检测是否进入到了相关的媒体页
+	 * 参数：           MOVIE,TV,CHILDREN,VARIETY,VIDEO_CATEGORY,PLAY_RECORD,MEMBER,ALL分别对应：
+	 * 				电影,电视剧,少儿,综艺,视频分类,播放记录,金卡会员,视频分类
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMediaView(String name) {
+		if ("MOVIE".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.ALL);
+			Common.AssertTextExists(FunTV_Const.text.RECOMMEDATION);
+			Common.AssertTextExists(FunTV_Const.text.NEW_MOVIES);
+			Common.AssertTextExists(FunTV_Const.text.BILLION_OFFICE);
+		}
+		else if ("TV".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.ALL);
+			Common.AssertTextExists(FunTV_Const.text.RECOMMEDATION);
+			Common.AssertTextExists(FunTV_Const.text.HOT);
+			Common.AssertTextExists(FunTV_Const.text.TOPICS);
+		}
+		else if ("CHILDREN".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.ALL);
+			Common.AssertTextExists(FunTV_Const.text.RECOMMEDATION);
+			Common.AssertTextExists(FunTV_Const.text.STARS);
+			Common.AssertTextExists(FunTV_Const.text.INITIATION);
+		}
+		else if ("VARIETY".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.ALL);
+			Common.AssertTextExists(FunTV_Const.text.RECOMMEDATION);
+			Common.AssertTextExists(FunTV_Const.text.TALK_SHOW);
+			Common.AssertTextExists(FunTV_Const.text.EMOTION);
+		}
+		else if ("VIDEO_CATEGORY".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.NEW_UPDATE);
+			Common.AssertTextExists(FunTV_Const.text.RANKING);
+			Common.AssertTextExists(FunTV_Const.text.NEWS);
+		}
+		else if ("PLAY_RECORD".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.PLAY_RECORD);
+			Common.AssertTextExists(FunTV_Const.text.MY_FAVOR);
+		}
+		else if ("MEMBER".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.BECOME_MEMBER);
+			Common.AssertIdExists(FunTV_Const.id.VIP_LOGO);
+			Common.AssertIdExists(FunTV_Const.id.ACCOUNT_LOGO);
+			Common.AssertIdExists(FunTV_Const.id.EXCHANGE_LOGL);
+		}
+		else if ("ALL".equalsIgnoreCase(name)) {
+			Common.AssertTextExists(FunTV_Const.text.RANKING);
+			Common.AssertTextExists(FunTV_Const.text.NEW_UPDATE);
+			Common.AssertTextExists(FunTV_Const.text.NEWS);
+		} 
+		else {
+			assertTrue("wrong value about the parameter", false);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     naviToDetailView
+	 * 函数解释：打开某个视频的详情页
+	 * 参数：           MOVIE,TV,CHILDREN,VARIETY分别对应：
+	 * 				电影,电视剧,少儿,综艺
+	 * 作者：          李建飞 
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void naviToDetailView(String name) {
+		if ("MOVIE".equalsIgnoreCase(name)) {
+			naviToMediaView("MOVIE");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}
+		else if ("TV".equalsIgnoreCase(name)) {
+			naviToMediaView("TV");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}
+		else if ("CHILDREN".equalsIgnoreCase(name)) {
+			naviToMediaView("CHILDREN");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}
+		else if ("VARIETY".equalsIgnoreCase(name)) {
+			naviToMediaView("VARIETY");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}
+		else {
+			assertTrue("wrong value about the parameter", false);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      openMedaiDetailViewByCmd
+	 * 函数解释： 通过命令直接打开某个视频的详情页
+	 * 参数：           mediaType:视频的类型
+	 * 				"MOVIE","TV","CHILDREN","VARIETY"分别对应电影，电视，少儿，综艺
+	 * 				如果与以上值都不相同会作为媒体ID直接打开
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void openMedaiDetailViewByCmd(String MediaID) {
+		if ("MOVIE".equalsIgnoreCase(MediaID)) {
+			Common.exec("am start -n com.bestv.ott/.detail.DetailPageActivtiy -e actionData 118490");
+			Common.sleep(5000);
+		}
+		else if ("TV".equalsIgnoreCase(MediaID)) {
+			Common.exec("am start -n com.bestv.ott/.detail.DetailPageActivtiy -e actionData 118135");
+			Common.sleep(5000);
+		}
+		else if ("CHILDREN".equalsIgnoreCase(MediaID)) {
+			Common.exec("am start -n com.bestv.ott/.detail.DetailPageActivtiy -e actionData 201392");
+			Common.sleep(5000);
+		}
+		else if ("VARIETY".equalsIgnoreCase(MediaID)) {
+			Common.exec("am start -n com.bestv.ott/.detail.DetailPageActivtiy -e actionData 102849");
+			Common.sleep(5000);
+		}
+		else {
+			Common.exec("am start -n com.bestv.ott/.detail.DetailPageActivtiy -e actionData " + MediaID);
+			Common.sleep(5000);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      checkMedaiDetailView
+	 * 函数解释： 检测电视当前是否处于视频的详情页
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMedaiDetailView() {
+		Common.AssertIdExists(FunTV_Const.id.FAV_BUTTON);
+		Common.AssertIdExists(FunTV_Const.id.PLAY_BUTTON);
+	}
+	
+	/* =======================================================================================
+	 * 函数名：      checkMedaiDetailViewNull
+	 * 函数解释： 检测详情页列举的演员和导演是否存在查不到的情况
+	 * 参数：           无
+	 * 作者：           何伟
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMedaiDetailViewNull() {
+		//最多导航5个导演或者演员
+		int count = 0;
+		while (count <= 4) {
+			
+			//每次进入详细页等待5秒等待优惠弹框消失
+			sleep(5000);
+			//向右5次依次摆脱掉 试看，付费，收藏，片花，选集 到达 等等。
+			Common.PressTimes("RIGHT", 6);
+			sleep(2000);
+			
+			//移动到导演或者演员
+			Common.PressTimes("UP", 2);
+			sleep(2000);
+			
+			//System.out.println("count = " + count);
+			if (count != 0) Common.PressTimes("LEFT", count);
+
+			// 试着进入相关影片页面
+			UiObject tmp = new UiObject(new UiSelector().selected(true).resourceId("com.bestv.ott:id/detail_actor_name"));
+			try {			
+				//一旦点击就丢失焦点了，跟遥控器操作不一样！
+				tmp.clickAndWaitForNewWindow();
+			} catch (UiObjectNotFoundException e) {
+				assertTrue("Can not find resource ID!", false);
+				e.printStackTrace();
+			}
+			sleep(2000);
+			Common.AssertTextContainsExists("相关", "没有找到相关的影片，请报Bug");
+
+			// 返回详细页		
+			System.out.println("返回详情页");
+			sleep(2000);
+			Common.pressBack();
+			sleep(2000);
+			count++;			
+		}
+		
+	}
+
+	/* =======================================================================================
+	 * 函数名：      checkMedaiPlayingView
+	 * 函数解释： 检测电视当前是否处于视频播放的页面
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMedaiPlayingView() {
+		Common.pressDPadCenter();
+		Common.AssertIdExists(FunTV_Const.id.PAUSE_BUTTON);
+		Common.pressDPadCenter();
+		Common.AssertIdNotExists(FunTV_Const.id.PAUSE_BUTTON);
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      checkMedaiPlayingMenuOpen
+	 * 函数解释： 检测播放视频界面的菜单是否打开
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMedaiPlayingMenuOpen() {
+		Common.AssertTextExists(FunTV_Const.text.CLARITY);
+		Common.AssertTextExists(FunTV_Const.text.RATIO);
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      checkMedaiPlayingEpisodeMenuOpen
+	 * 函数解释： 检测播放视频界面的选集菜单是否打开
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMedaiPlayingEpisodeMenuOpen() {
+		Common.AssertIdExists(FunTV_Const.id.EPISODE_TITLE);
+		Common.AssertIdExists(FunTV_Const.id.TV_CELL);
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     cleanPlayRecord
+	 * 函数解释：清除播放记录
+	 * 参数：           无
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void cleanPlayRecord() {
+		naviToMediaView("PLAY_RECORD");
+		Common.pressDPadUp();
+		Common.pressMenu();
+		if (Common.IfTextExists(FunTV_Const.text.CLEAR_ALL)){
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+			Common.pressDPadCenter();
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     cleanFavorRecord
+	 * 函数解释：清除收藏记录
+	 * 参数：           无
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void cleanFavorRecord() {
+		naviToMediaView("PLAY_RECORD");
+		Common.pressDPadUp();
+		Common.pressDPadRight();
+		Common.pressMenu();
+		if (Common.IfTextExists(FunTV_Const.text.CLEAR_ALL)){
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+			Common.pressDPadCenter();
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     pressCollectBtn
+	 * 函数解释：点击收藏按钮
+	 * 参数：          无
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void pressCollectBtn() {
+		int i = 0;
+		while(!Common.isFocused("id", FunTV_Const.id.FAV_BUTTON)){
+			Common.pressDPadRight();
+			i++;
+			if (i > 3){
+				assertTrue("Can not find the fav button", false);
+			}
+		}
+		Common.pressDPadCenter();
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     pressPlayBtn
+	 * 函数解释：点击播放按钮
+	 * 参数：          无
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void pressPlayBtn() {
+		int i = 0;
+		while(!Common.isFocused("id", FunTV_Const.id.PLAY_BUTTON)){
+			Common.pressDPadLeft();
+			i++;
+			if (i > 3){
+				assertTrue("Can not find the play button", false);
+			}
+		}
+		Common.pressDPadCenter();
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     openVideo
+	 * 函数解释：播放一个视频
+	 * 参数：         videoType -- 视频类型：
+	 * 			"MOVIE","TV","CHILDREN","VARIETY"分别对应电影，电视，少儿，综艺
+	 * 				如果与以上值都不相同会作为媒体ID直接打开
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void openVideo(String videoType) {
+		openMedaiDetailViewByCmd(videoType);
+		pressPlayBtn();
+		int temp = 0;
+		while(Common.ifIdExists(FunTV_Const.id.CACHE_PROGRESS_BAR)){
+			temp++;
+			if (temp >= 10){
+				Common.sleep(3000);
+				break;
+			}
+		}
+		Common.sleep(16);//防止前贴片广告影响
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     selectEpisode
+	 * 函数解释：在选集列表里选择某一集
+	 * 参数：         episodeNum -- 要选择的集数
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void selectEpisode(String episodeNum) {
+		Common.clickText(episodeNum);
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     checkEpisodeNum
+	 * 函数解释：检测某一集的集数
+	 * 参数：         episodeNum -- 要选择的集数
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkEpisodeNum(String episodeNum) {
+		Common.pressDPadCenter();
+		String text = Common.getTextById(FunTV_Const.id.VIDEO_TITLE);
+		int begin = text.lastIndexOf("第");
+		int end = text.lastIndexOf("集");
+		String currentNum = text.substring(begin + 1, end);
+		if (!currentNum.equals(episodeNum)){
+			Common.errorHandle("给定的集数和当前的集数不一样");
+		}
+		Common.pressDPadCenter();
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：      exitPlayingVideo
+	 * 函数解释： 退出视频播放
+	 * 参数：           "back":按两次back键退出
+	 *           "home":点击home键退出
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void exitPlayingVideo(String type) {
+		if ("BACK".equalsIgnoreCase(type)) {
+			Common.pressBack("2");
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      checkMediaPayView
+	 * 函数解释： 检测各个视频的购买页面
+	 * 参数：           mediaType -- 视频的类型
+	 * 				"MOVIE","TV","CHILDREN","VARIETY"分别对应电影，电视，少儿，综艺
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkMediaPayView(String mediaType) {
+		if ("MOVIE".equalsIgnoreCase(mediaType)) {
+			Common.AssertTextExists(FunTV_Const.text.MEDIA_PAY_SELECT);
+			Common.AssertTextExists(FunTV_Const.text.MOVIE_MEMBER);
+			Common.AssertIdExists(FunTV_Const.id.OLD_PRICE);
+		}
+		if ("CHILDREN".equalsIgnoreCase(mediaType)) {
+			Common.AssertTextExists(FunTV_Const.text.MEDIA_PAY_SELECT);
+			Common.AssertTextExists(FunTV_Const.text.CHILDREN_MEMBER);
+			Common.AssertIdExists(FunTV_Const.id.OLD_PRICE);
+		}
+	}
+
+	
+	
+	/* =======================================================================================
+	 * 函数名：      openSearch
+	 * 函数解释： 打开搜索界面
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void openSearch() {
+		goToHome();
+		Common.pressDPadUp();
+		Common.pressDPadRight("5");
+		Common.pressDPadCenter();
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：      searchText
+	 * 函数解释： 在搜索界面搜索文本
+	 * 参数：           text:要搜索的文本内容
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	//目前方法是直接调用click点击，之后可以写个算法把焦点移动到字符上点击确定按钮实现，这样更准确模拟出用户的行为
+	public void searchText(String text) {
+		for (int i = 0;i < text.length();i++){
+			Common.clickText(String.valueOf(text.charAt(i)).toUpperCase());
+			Common.sleep(2000);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      openApp
+	 * 函数解释： 打开桌面上的某个应用
+	 * 参数：           appName:应用名称
+	 * 				"SETTINGS","PIC_AND_SOUNND","PLAY_SETTING","ABOUT","PERSONAL_CENTER","FILEMANAGER","APPSTORE","MYAPP","CAROUSEL"分别对应:
+	 *                   通用设置，图像与声音，播放设置，关于，个人中心，文件管理器，应用商店，我的应用，轮播
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void openApp(String appName) {
+		if ("SETTINGS".equalsIgnoreCase(appName)) {
+			naviToTab("设置");
+			Common.pressDPadDown();
+			Common.pressDPadRight("2");
+			Common.pressDPadDown("2");
+			Common.pressDPadCenter();
+		} else if ("PIC_AND_SOUNND".equalsIgnoreCase(appName)) {
+			naviToTab("设置");
+			Common.pressDPadDown();
+			Common.pressDPadRight("3");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}  else if ("PLAY_SETTING".equalsIgnoreCase(appName)) {
+			naviToTab("设置");
+			Common.pressDPadDown();
+			Common.pressDPadRight("4");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}  else if ("ABOUT".equalsIgnoreCase(appName)) {
+			naviToTab("设置");
+			Common.pressDPadDown();
+			Common.pressDPadRight("4");
+			Common.pressDPadDown("2");
+			Common.pressDPadCenter();
+		}  else if ("PERSONAL_CENTER".equalsIgnoreCase(appName)) {
+			naviToTab("设置");
+			Common.pressDPadDown();
+			Common.pressDPadCenter();
+		}  else if ("FILEMANAGER".equalsIgnoreCase(appName)) {
+			naviToTab("应用");
+			Common.pressDPadDown("2");
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+		}
+		else if ("APPSTORE".equalsIgnoreCase(appName)) {
+			naviToTab("应用");
+			Common.pressDPadDown();
+			Common.pressDPadRight();
+			Common.pressDPadCenter();
+		} 
+		else if ("MYAPP".equalsIgnoreCase(appName)) {
+			naviToTab("应用");
+			Common.pressDPadDown();
+			Common.pressDPadRight("2");
+			Common.pressDPadCenter();
+		} else if ("CAROUSEL".equalsIgnoreCase(appName)) {
+			goToHome();
+			Common.pressDPadLeft();
+			Common.pressDPadCenter();
+			Common.sleep(10000);
+		} else {
+			assertTrue("wrong value about the parameter", false);
+		}
+		Common.sleep(3000);
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      openAppByCmd
+	 * 函数解释： 使用am命令直接打开桌面上的某个应用
+	 * 参数：           appName:应用名称
+	 * 				"SETTINGS","FILEMANAGER","APPSTORE"分别对应设置，文件管理器，应用商店
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void openAppByCmd(String appName) {
+		if ("SETTINGS".equalsIgnoreCase(appName)) {
+			Common.exec("am start -n tv.fun.settings/.general.GeneralSettingsActivity");
+			Common.sleep(5000);
+		}
+		else if ("FILEMANAGER".equalsIgnoreCase(appName)) {
+			Common.exec("am start -n tv.fun.filemanager/.FunFileManagerActivity");
+			Common.sleep(5000);
+		}
+		else if ("APPSTORE".equalsIgnoreCase(appName)) {
+			Common.exec("am start -n tv.fun.appstore/.ui.AppStoreActivity");
+			Common.sleep(5000);
+		} else {
+			assertTrue("wrong value about the parameter", false);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      checkInSearchView
+	 * 函数解释： 检查是否在搜索界面
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void checkSearchView() {
+		Common.AssertTextExists(FunTV_Const.text.SEARCH_EDIT);
+		Common.AssertIdExists(FunTV_Const.id.SEARCH_EDIT);
+		Common.AssertIdExists(FunTV_Const.id.VOICE_BTN);
+	}
+
+}

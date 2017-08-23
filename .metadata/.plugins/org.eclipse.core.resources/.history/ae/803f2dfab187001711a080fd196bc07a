@@ -1,0 +1,36 @@
+import java.util.Scanner;
+
+
+public class isbn {
+
+	public static void main(String[] args) {
+		Scanner input = new Scanner(System.in);
+		String inputString = input.nextLine();
+		String inputString2= inputString.replaceAll("\\-", "");
+		System.out.println(inputString2);
+		System.out.println("inputString2.length:" + inputString2.length());
+		int sum = 0;
+		int symbol = 0;
+		for (int i = 0; i < inputString2.length(); i++) {
+			System.out.println(i + ": " + inputString2.charAt(i));
+			if (i < (inputString2.length() - 1)) {
+				sum = sum + inputString2.charAt(i) * (i + 1);
+			}else {
+				symbol = inputString2.charAt(i);
+				System.out.println("symbol :" + symbol);
+				int remainder = sum % 11;
+				if (remainder == symbol) {
+					System.out.println("Right");
+				} else {
+					inputString2.replace(inputString2.charAt(i),(String.valueOf(remainder)).charAt(0));
+			}
+			
+		}
+
+			
+
+		}
+
+	}
+
+}

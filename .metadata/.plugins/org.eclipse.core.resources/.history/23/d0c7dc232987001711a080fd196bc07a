@@ -1,0 +1,18 @@
+import java.util.Scanner;
+
+
+public class isbn {
+
+	public static void main(String[] args) {
+		Scanner input = new Scanner(System.in);
+		String inputString = input.nextLine();
+		String inputString2= inputString.replaceAll("\\-", "");
+		System.out.println(inputString2);
+		String[] inputList = inputString2.split("\\d");
+		for (int i = 0; i < inputList.length; i++) {
+			System.out.println(inputList[i]);
+		}
+
+	}
+
+}

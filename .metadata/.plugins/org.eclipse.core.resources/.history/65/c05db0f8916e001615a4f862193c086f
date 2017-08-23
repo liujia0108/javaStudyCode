@@ -1,0 +1,112 @@
+package scripts.signalsources;
+
+import java.io.IOException;
+
+import android.util.Log;
+
+import com.android.uiautomator.core.UiObjectNotFoundException;
+
+import libs.Common;
+import libs.OriginTestCase;
+import libs.SignalResouce;
+import constant.*;
+
+public class signalTest extends libs.OriginTestCase{
+	public void testSignal() throws IOException, InterruptedException, UiObjectNotFoundException {
+		Common.press(260, 3000);
+		/*
+		SignalResouce signalResouce = new SignalResouce();
+		signalResouce.SwitchCusor();
+		signalResouce.enterSignal("模拟信号");
+		*/
+		//new SignalResouce().SwitchCusor();
+		SignalResouce.SwitchCusor();
+		Log.d("liujia", "case2");
+		/*
+		Runtime.getRuntime().exec("logcat -c");
+		sleep(2000);
+		SignalResouce.enterSignal("模拟信号");
+		sleep(3000);
+		String curInputSource = SignalResouce.FilterLog(".*\\:\\s+curInputSource is\\s+\\:(\\d+).*");
+		Log.d("liujia", "FIND " + curInputSource);
+		boolean ATVCheck = false;
+		ATVCheck = SignalResouce.CheckSignalResource("模拟信号","1");
+		Log.d("liujia", Boolean.toString(ATVCheck));
+		sleep(2000);
+		Common.pressBack(2000);
+		Common.press(260, 3000);//弹出信号源选择框
+		SignalResouce.SwitchCusor();
+		Runtime.getRuntime().exec("logcat -c");
+		sleep(2000);
+		SignalResouce.enterSignal("数字信号");
+		String DTVcurInputSource = SignalResouce.FilterLog(".*\\:\\s+curInputSource is\\s+\\:(\\d+).*");
+		Log.d("liujia", "FIND " + DTVcurInputSource);
+		boolean DTVCheck = false;
+		DTVCheck = SignalResouce.CheckSignalResource("数字信号","28");
+		Log.d("liujia", Boolean.toString(DTVCheck));
+		Common.pressBack(2000);
+		Common.pressMenu(2000);
+		SignalResouce.DTVMenuButton("数字信号",DTVCheck);
+		Common.pressBack();
+		sleep(2000);
+		*/
+		Common.pressBack(2000);
+		Common.press(260, 3000);//弹出信号源选择框
+		Runtime.getRuntime().exec("logcat -c");
+		sleep(4000);
+		SignalResouce.enterSignal("视频");
+		String AVcurInputSource = SignalResouce.FilterLog(".*\\:\\s+curInputSource is\\s+\\:(\\d+).*");
+		Log.d("liujia", "FIND " + AVcurInputSource);
+		boolean AVCheck = false;
+		AVCheck = SignalResouce.CheckSignalResource("视频", "2");
+		Log.d("liujia", Boolean.toString(AVCheck));
+		Common.pressMenu(2000);
+		String[] currentMenuList = SignalResouce.MenuButton("视频", AVCheck);
+		if (currentMenuList.length != 0 ) {
+			for (int i = 0; i < currentMenuList.length; i++) {
+				if (currentMenuList[i].equalsIgnoreCase("画面比例")) {
+					String[] ExpectPption = Signal_Const.list.aspectRatioForAV;
+					for (int j = 0; j <= option.length; j++) {
+						String currentOption = SignalResouce.getChildText("com.mstar.tv.tvplayer.ui:id/setting_item_value", true, 0);
+						Log.d("liujia", "currentOption: "+ currentOption);
+						boolean result = SignalResouce.chooseOption(option, currentOption);
+						Log.d("liujia", Boolean.toString(result));
+						Common.pressDPadLeft(2000);
+					}
+					
+				}
+				if (currentMenuList[i].equalsIgnoreCase("图像模式")) {
+					String[] option = Signal_Const.list.imageModel;
+					for (int j = 0; j <= option.length; j++) {
+						String currentOption = SignalResouce.getChildText("com.mstar.tv.tvplayer.ui:id/text_arrow_com", true, 0);
+						Log.d("liujia", "currentOption: "+ currentOption);
+						boolean result = SignalResouce.chooseOption(option, currentOption);
+						Log.d("liujia", Boolean.toString(result));
+						Common.pressDPadCenter(2000);
+						Common.pressDPadDown();
+						Common.pressDPadCenter(2000);
+						Common.pressBack();//exit free model interface
+						Common.pressMenu();
+						Common.pressDPadDown();
+						
+					}
+					
+				}
+				if (currentMenuList[i].equalsIgnoreCase("音效模式")) {
+					String[] option = Signal_Const.list.soundEffect;
+					for (int j = 0; j <= option.length; j++) {
+						String currentOption = SignalResouce.getChildText("com.mstar.tv.tvplayer.ui:id/setting_item_value", true, 0);
+						Log.d("liujia", "currentOption: "+ currentOption);
+						boolean result = SignalResouce.chooseOption(option, currentOption);
+						Log.d("liujia", Boolean.toString(result));
+						Common.pressDPadLeft(2000);
+					}
+					
+				}
+				Common.pressDPadDown(2000);
+			}
+		}
+		
+	}
+
+}

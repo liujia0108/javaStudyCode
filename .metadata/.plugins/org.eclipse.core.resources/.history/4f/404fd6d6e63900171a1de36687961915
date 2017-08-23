@@ -1,0 +1,1716 @@
+package libs;
+import android.util.Log;
+import android.view.KeyEvent;
+
+import com.android.uiautomator.core.UiDevice;
+import com.android.uiautomator.core.UiObject;
+import com.android.uiautomator.core.UiObjectNotFoundException;
+import com.android.uiautomator.core.UiScrollable;
+import com.android.uiautomator.core.UiSelector;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.python.parser.ast.Print;
+
+import com.android.uiautomator.core.UiCollection;
+import com.android.uiautomator.testrunner.UiAutomatorTestCase;
+
+import tools.Tool;
+import constant.KeyCode;
+
+
+import libs.OriginTestCase;
+
+public class Common extends UiAutomatorTestCase {
+
+	public static UiDevice getUiDevice = null;
+
+	public Common() {
+		getUiDevice = OriginTestCase.uiDevice;
+	}
+	
+	Tool tool = OriginTestCase.tool;
+
+	// ---------------------------------------------常用的断言方法---------------------------------------------
+
+	/*
+	 * 断言当前页面上文字是否存在的函数，如果在页面上找到了text则断言成功，否则断言失败并输出message参数解释：
+	 * text：为当前页面上要找的字符串message：如果未找到text则需要输出的断言错误信息
+	 */
+	public void AssertTextExists(String text, String message) {
+		tool.writeLog("执行语句：AssertTextExists --> " + text);
+		System.out.println("AssertTextExists->" +  text + " Enter \n");
+		try {
+			String t = new UiObject(new UiSelector().text(text)).getText();
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			errorHandle(message, e);
+
+		}
+		sleep(1000);
+		System.out.println("AssertTextExists->" +  text + " Exit \n");
+	}
+	
+	/*
+	 * 断言当前页面上文字是否存在的函数，如果在页面上找到了text则断言成功，否则断言失败并输出message 
+	 * 参数解释：
+	 * Lists: 需要比较的待选项，可以有很多
+	 * message： 没有找到时候打印出的消息。
+	 */
+	public void AssertTextExistsInList(String[] Lists, String message) {
+		tool.writeLog("执行语句：AssertTextExistsInList --> ");
+		System.out.println("AssertTextExistsInList-> Enter \n");
+		boolean isFound = false;
+		for (String s : Lists) {
+			System.out.println("验证有没有关键字：" + s);
+			try {
+				sleep(1000);
+				String t = new UiObject(new UiSelector().text(s)).getText();
+				System.out.println("找到关键字：" + t);
+				isFound = true;
+			} catch (UiObjectNotFoundException e) {
+				Log.d("hewei1", s + "is not found!check again!");
+			}
+		}
+		sleep(1000);
+		
+		if (!isFound)
+			errorHandle(message);
+		normalLogRecord();	
+		System.out.println("AssertTextExistsInList-> Exit \n");
+	}
+	
+	/*
+	 * 断言当前页面上文字是否存在的函数，如果在页面上没有text则断言成功，否则断言失败并输出message
+	 * 参数解释：
+	 * Lists: 需要比较的待选项，可以有很多
+	 * message： 没有找到时候打印出的消息。
+	 */
+	public void AssertTextNotExistsInList(String[] Lists, String message) {
+		tool.writeLog("执行语句：AssertTextNotExistsInList --> ");
+		System.out.println("AssertTextNotExistsInList-> Enter \n");
+		boolean isFound = false;
+		for (String s : Lists) {
+			System.out.println("验证有没有关键字：" + s);
+			try {
+				String t = new UiObject(new UiSelector().text(s)).getText();
+				System.out.println("找到关键字：" + t);
+				isFound = true;
+			} catch (UiObjectNotFoundException e) {
+				Log.d("hewei1", s + "is not found!check again!");
+				
+			}
+		}
+		
+		//全部遍历如果找到就打错误日志
+		if (isFound)
+			errorHandle(message);
+		normalLogRecord();	
+		System.out.println("AssertTextNotExistsInList-> Exit \n");
+	}
+	
+	/*
+	 * 断言当前页面上是否包含某些文字的函数，如果在页面上找到了text则断言成功，否则断言失败并输出message参数解释：
+	 * text：为当前页面上要找的字符串message：如果未找到text则需要输出的断言错误信息
+	 */
+	public void AssertTextContainsExists(String text, String message) {
+		tool.writeLog("执行语句：AssertTextContainsExists --> " + text);
+		System.out.println("AssertTextContainsExists->" +  text + " Enter \n");
+		try {
+			String t = new UiObject(new UiSelector().textContains(text)).getText();
+			normalLogRecord();	
+			System.out.println(t);	
+		} catch (UiObjectNotFoundException e) {
+			errorHandle(message, e);
+			Log.d("liujia", text + "is not existed!check again!");
+		}
+		sleep(1000);
+		System.out.println("AssertTextContainsExists->" +  text + " Exit \n");
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     AssertScrollTextExists
+	 * 函数解释：滑动检测当前页面是否存在相应的文本值，如果有会滑动到文本显示出来为止
+	 * 参数：         text：需要查找的文本值
+	 * 返回值：     无
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public void AssertScrollTextExists(String text) {
+		tool.writeLog("执行语句：AssertScrollTextExists --> " + text);
+		String message = "没有找到文本->" + text;
+		System.out.println("AssertScrollTextExists->" +  text + " Enter \n");
+		try {
+			new UiScrollable(new UiSelector().scrollable(true)).scrollTextIntoView(text);
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			errorHandle(message, e);
+		}
+		sleep(1000);
+		System.out.println("AssertScrollTextExists->" +  text + " Exit \n");
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     AssertTextExists
+	 * 函数解释：检测当前页面是否存在相应的文本值
+	 * 参数：         text：需要查找的文本值
+	 * 返回值：     无
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public void AssertTextExists(String text) {
+		tool.writeLog("执行语句：AssertTextExists --> " + text);
+		String message = "没有找到文本->" + text;
+		System.out.println("AssertTextExists->" +  text + " Enter \n");
+		try {
+			String t = new UiObject(new UiSelector().text(text)).getText();
+			System.out.println(t);	
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			errorHandle(message, e);
+		}
+		sleep(1000);
+		System.out.println("AssertTextExists->" +  text + " Exit \n");
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     AssertIdExists
+	 * 函数解释：检测当前页面是否存在相应的id值
+	 * 参数：         id：需要查找的id值
+	 * 返回值：     无
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public void AssertIdExists(String id) {
+		tool.writeLog("执行语句：AssertIdExists --> " + id);
+		String message = "没有找到id->" + id;
+		System.out.println("AssertIdExists->" +  id + " Enter \n");
+		try {
+			String b = new UiObject(new UiSelector().resourceId(id)).getClassName();
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e1) {
+			errorHandle(message, e1);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     AssertIdNotExists
+	 * 函数解释：检测当前页面不存在相应的id值
+	 * 参数：         id：需要确定不存在的id值
+	 * 返回值：     无
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public void AssertIdNotExists(String id) {
+		tool.writeLog("执行语句：AssertIdNotExists --> " + id);
+		String message = "找到id->" + id;
+		System.out.println("AssertIdNotExists->" +  id + " Enter \n");
+		try {
+			String b = new UiObject(new UiSelector().resourceId(id)).getClassName();
+			errorHandle(message);
+		} catch (UiObjectNotFoundException e1) {
+			normalLogRecord();	
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     AssertIdExists
+	 * 函数解释：检测当前页面是否存在相应的id值
+	 * 参数：         id：需要查找的id值
+	 *          message：出错时的输出信息
+	 * 返回值：     无
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public void AssertIdExists(String id, String message) {
+		tool.writeLog("执行语句：AssertIdExists --> " + id);
+		System.out.println("AssertIdExists->" +  id + " Enter \n");
+		try {
+			String b = new UiObject(new UiSelector().resourceId(id)).getClassName();
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			errorHandle(message, e);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     clickText
+	 * 函数解释：点击文本
+	 * 参数：         text -- 要点击的文本
+	 * 返回值：     无
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public void clickText(String text) {
+		tool.writeLog("执行语句：clickText --> " + text);
+		try {
+			new UiObject(new UiSelector().text(text)).click();
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("Can not click text ->" + text, e);
+		}
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     isFocused
+	 * 函数解释：检测焦点是否在给定文本值或者ID值对应的组件上
+	 * 参数：         type：组件的类型，"id","text"
+	 *          value：组件对应的值
+	 * 返回值：     ture,false
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public Boolean isFocused(String type, String value) {
+		tool.writeLog("执行语句：isFocused --> " + value);
+		Boolean result = false;
+		if ("text".equalsIgnoreCase(type)){
+			try {
+				result =new UiObject(new UiSelector().text(value)).isFocused();
+				normalLogRecord();	
+			} catch (UiObjectNotFoundException e) {
+				errorHandle("no such text ->" + value, e);
+			}
+		}
+		if ("id".equalsIgnoreCase(type)){
+			try {
+				result =new UiObject(new UiSelector().resourceId(value)).isFocused();
+				normalLogRecord();	
+			} catch (UiObjectNotFoundException e) {
+				errorHandle("no such id ->" + value, e);
+			}
+		}
+		return result;
+	}
+	
+	/*=======================================================================================
+	 * 函数名：isEnabled
+	 * 函数解释：当部分元素的id没有select为true的属性时，可以通过判断enable为true时固定resID的是否存在
+	 * 返回值：boolean true or false
+	 * 作者：liujia
+	 */
+	public boolean isEnabled(String resID){
+		boolean isExisted = false;
+		try {
+			UiObject selectThrowId = new UiObject(new UiSelector().resourceId(resID));
+			isExisted = selectThrowId.isEnabled();
+		} catch (Exception e) {
+			errorHandle("no such id ->" + resID, e);
+		}
+		return isExisted;
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     isSelected
+	 * 函数解释：检测指定文本值或者ID值对应的组件的selected属性值
+	 * 参数：         type：组件的类型 -- "id","text"
+	 *          value：组件对应的值
+	 * 返回值：     ture,false
+	 * 作者：          李建飞
+	 * ======================================================================================= */
+	public Boolean isSelected(String type, String value) {
+		tool.writeLog("执行语句：isSelected --> " + value);
+		Boolean result = false;
+		if ("text".equalsIgnoreCase(type)){
+			try {
+				result =new UiObject(new UiSelector().text(value)).isSelected();
+				normalLogRecord();	
+			} catch (UiObjectNotFoundException e) {
+				errorHandle("no such text ->" + value, e);
+			}
+		}
+		if ("id".equalsIgnoreCase(type)){
+			try {
+				result =new UiObject(new UiSelector().resourceId(value)).isSelected();
+				normalLogRecord();	
+			} catch (UiObjectNotFoundException e) {
+				errorHandle("no such id ->" + value, e);
+			}
+		}
+		return result;
+	}
+	
+	
+	public boolean IfTextExists(String text, String message) {
+		tool.writeLog("执行语句：IfTextExists --> " + text);
+		System.out.println("IfTextExists->" +  text + " Enter \n");
+		try {
+			/*new UiCollection(new UiSelector()).getChildByText(new UiSelector(),
+					text);*/
+			String t = new UiObject(new UiSelector().textContains(text)).getText();
+			System.out.println(t);
+			System.out.println("IfTextExists->" +  text + " Exit \n");
+			sleep(1000);
+			return true;
+		} catch (UiObjectNotFoundException e) {
+			Log.d("hewei1", text + "is not existed!check again!");
+			System.out.println("Not existed! \n");
+			System.out.println("IfTextExists->" +  text + " Exit \n");
+			sleep(1000);
+			return false;
+		}
+	}
+	
+	
+	
+	public boolean IfTextExists(String text) {
+		tool.writeLog("执行语句：IfTextExists --> " + text);
+		System.out.println("IfTextExists->" +  text + " Enter \n");
+		try {
+			/*new UiCollection(new UiSelector()).getChildByText(new UiSelector(),
+					text);*/
+			String t = new UiObject(new UiSelector().textContains(text)).getText();
+			System.out.println(t);
+			System.out.println("IfTextExists->" +  text + " Exit \n");
+			sleep(1000);
+			return true;
+		} catch (UiObjectNotFoundException e) {
+			Log.d("hewei1", text + "is not existed!check again!");
+			System.out.println("Not existed! \n");
+			System.out.println("IfTextExists->" +  text + " Exit \n");
+			sleep(1000);
+			return false;
+		}
+	}
+	
+	
+	
+	public boolean ifIdExists(String id) {
+		boolean ifIdExist = false;
+		try {
+			ifIdExist = new UiObject(new UiSelector().resourceId(id)).exists();
+		} catch (Exception e) {
+			errorHandle(id + "is not existed!");// TODO: handle exception
+		}
+		return ifIdExist;
+	}
+
+	/*
+	 * 断言当前页面给定的resourceID是否和给定的Text匹配，如果匹配则断言成功，否则断言失败并输出message参数解释：
+	 * resourceID：需要传入的resourceID信息;  text：需要传入的比较的文本
+	 * @Author hewei1
+	 */
+	public void AssertTextExistsByResID(String resourceID, String text) {
+		tool.writeLog("执行语句：AssertTextExistsByResID --> " + text);
+		System.out.println("AssertTextExistsByResID -> Enter \n");
+		UiObject obj_2 = null;
+		sleep(1000);
+		try {
+			obj_2 = new UiObject(new UiSelector().resourceId(resourceID).selected(true));
+			assertEquals(obj_2.getText(),text);
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			Log.d("hewei1", resourceID + "is not existed!check again!");
+			errorHandle(resourceID + " refered " + text + " is NOT existed \n", e);
+		}
+		sleep(1000);
+		System.out.println("AssertTextExistsByResID -> Exit \n");
+	}
+	
+	/*
+	 * 断言当前页面给定的resourceID是否和给定的Text想包含，如果包含则断言成功，否则断言失败并输出message参数解释：
+	 * resourceID：需要传入的resourceID信息;  StringA：需要传入的比较的文本; text输出的信息
+	 * @Author hewei1
+	 */
+	public void AssertTextContainsByResID(String resourceID, String StringA, String text) {
+		tool.writeLog("执行语句：AssertTextContainsByResID --> ");
+		System.out.println("AssertTextContainsByResID -> Enter \n");
+		UiObject obj_2 = null;
+		sleep(1000);
+		try {
+			obj_2 = new UiObject(new UiSelector().resourceId(resourceID).selected(true));
+			System.out.println(obj_2.getText());
+			if (obj_2.getText().contains(StringA))
+			assertTrue(true);
+			normalLogRecord();	
+		} catch (UiObjectNotFoundException e) {
+			Log.d("hewei1", resourceID + "is not existed!check again!");
+			errorHandle(resourceID + " refered " + text + " is NOT existed \n", e);
+		}
+		sleep(1000);
+		System.out.println("AssertTextContainsByResID -> Exit \n");
+	}
+	
+	/*
+	 * 断言当前页面给定的resourceID是否和给定的Text想包含，如果包含则断言成功，否则断言失败并输出message参数解释：
+	 * resourceID：需要传入的resourceID信息;  StringA：需要传入的比较的文本; text输出的信息
+	 * @Author hewei1
+	 * @selected(false)
+	 */
+	public void AssertTextContainsByResID2(String resourceID, String StringA, String text) {
+		tool.writeLog("执行语句：AssertTextContainsByResID2 --> ");
+		System.out.println("AssertTextContainsByResID2 -> Enter \n");
+		UiObject obj_2 = null;
+		sleep(1000);
+		try {
+			obj_2 = new UiObject(new UiSelector().resourceId(resourceID).selected(false));
+			System.out.println(obj_2.getText());
+			if (obj_2.getText().contains(StringA))
+			assertTrue(true);
+			normalLogRecord();
+		} catch (UiObjectNotFoundException e) {
+			Log.d("hewei1", resourceID + "is not existed!check again!");
+			errorHandle(resourceID + " refered " + text + " is NOT existed \n", e);
+		}
+		sleep(1000);
+		System.out.println("AssertTextContainsByResID2 -> Exit \n");
+	}
+	
+	/*
+	 * 断言当前页面给定的resourceID是否和给定的Text匹配，如果匹配则断言成功，否则断言失败并输出message参数解释：
+	 * resourceID：需要传入的resourceID信息;  text：需要传入的比较的文本
+	 * @Author hewei1
+	 */
+	public void AssertChildTextExistsByResID(String resourceID2, String text) {
+		tool.writeLog("执行语句：AssertChildTextExistsByResID --> ");
+		System.out.println("AssertChildTextExistsByResID -> Enter \n");
+		UiObject obj_2 = null;
+		sleep(1000);
+		try {
+			obj_2 = new UiObject(new UiSelector().className("android.widget.LinearLayout").focused(true)).getChild(new UiSelector().resourceId(resourceID2));
+			System.out.println(obj_2.getText() + "\n");
+			assertEquals(obj_2.getText(),text);
+			normalLogRecord();
+		} catch (UiObjectNotFoundException e) {
+			Log.d("hewei1", resourceID2 + "is not existed!check again!");
+			errorHandle(resourceID2 + " refered " + text + " is NOT existed \n", e);
+		}
+		sleep(1000);
+		System.out.println("AssertChildTextExistsByResID -> Exit \n");
+	}
+	
+	
+	/*
+	 * 断言当前页面上文字是否存在的函数。如果当前页面的包名是packageName，则断言成功，否则断言失败并输出message参数解释：
+	 * packageName：要找的包名信息message：如果未找到想要的包名，输出的断言错误信息
+	 */
+	public void AssertPackageExists(String packageName, String message) {
+		tool.writeLog("执行语句：AssertPackageExists --> ");
+		try {
+			new UiCollection(new UiSelector().packageName(packageName))
+					.getChild(new UiSelector().packageName(packageName));
+			normalLogRecord();
+		} catch (UiObjectNotFoundException e1) {
+			errorHandle(message, e1);
+		}
+	}
+
+	/*
+	 * 断言当前页面上文字（Launcher的历史记录）是否存在的函数。如果当前页面找到了text，则断言成功，光标向下移动一次，否则断言失败并输出没有历史记录
+	 * 参数解释：text：为当前页面上要找的字符串Add by zhengcheng
+	 */
+	public void AssertWatchExists(String text) {
+		tool.writeLog("执行语句：AssertWatchExists --> " + text);
+		try {
+			new UiCollection(new UiSelector()).getChildByText(new UiSelector(),
+					text);
+			System.out.println("The watch record exist");
+			pressDPadDown(500);
+			normalLogRecord();
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("error", e);
+		}
+	}
+
+	// ---------------------------------------------对常用的方法进行二次封装，增加时间选项
+	// start---------------------------------------------
+	public void pressHome(long time) {
+		getUiDevice.pressHome();
+		sleep(time);
+	}
+
+	public void pressHome() {
+		getUiDevice.pressHome();
+		sleep(3000);
+	}
+
+	public void pressMenu(long time) {
+		getUiDevice.pressMenu();
+		sleep(time);
+	}
+
+	public void pressMenu() {
+		getUiDevice.pressMenu();
+		sleep(1000);
+	}
+
+	public void pressBack(long time) {
+		getUiDevice.pressBack();
+		sleep(time);
+	}
+	public void pressBack(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			getUiDevice.pressBack();
+			sleep(1000);
+		}
+	}
+	public void pressBack() {
+		getUiDevice.pressBack();
+		sleep(1000);
+	}
+
+	public void pressDPadCenter(long time) {
+		getUiDevice.pressDPadCenter();
+		sleep(time);
+	}
+
+	public void pressDPadCenter() {
+		getUiDevice.pressDPadCenter();
+		sleep(3000);
+	}
+
+	public void pressDPadDown(long time) {
+		getUiDevice.pressDPadDown();
+		sleep(time);
+	}
+	public void pressDPadDown(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			getUiDevice.pressDPadDown();
+			sleep(1000);
+		}
+	}
+	public void pressDPadDown() {
+		getUiDevice.pressDPadDown();
+		sleep(1000);
+	}
+
+	public void pressDPadLeft(long time) {
+		getUiDevice.pressDPadLeft();
+		sleep(time);
+	}
+	public void pressDPadLeft(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			getUiDevice.pressDPadLeft();
+			sleep(1000);
+		}
+	}
+	public void pressDPadLeft() {
+		getUiDevice.pressDPadLeft();
+		sleep(1000);
+	}
+
+	public void pressDPadRight(long time) {
+		getUiDevice.pressDPadRight();
+		sleep(time);
+	}
+	public void pressDPadRight(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			getUiDevice.pressDPadRight();
+			sleep(1000);
+		}
+	}
+	public void pressDPadRight() {
+		getUiDevice.pressDPadRight();
+		sleep(1000);
+	}
+
+	public void pressDPadUp(long time) {
+		getUiDevice.pressDPadUp();
+		sleep(time);
+	}
+	public void pressDPadUp(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			getUiDevice.pressDPadUp();
+			sleep(1000);
+		}
+	}
+	public void pressDelete() {
+		getUiDevice.pressDelete();
+		sleep(1000);
+	}
+	
+	public void pressDelete(long time) {
+		getUiDevice.pressDelete();
+		sleep(time);
+	}
+	public void pressDelete(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			getUiDevice.pressDelete();
+			sleep(1000);
+		}
+	}
+	public void pressDPadUp() {
+		getUiDevice.pressDPadUp();
+		sleep(1000);
+	}
+
+	public void pressSearch(long time) {
+		getUiDevice.pressSearch();
+		sleep(time);
+	}
+
+	public void pressSearch() {
+		getUiDevice.pressSearch();
+		sleep(1000);
+	}
+	
+	public void pressChannelUp() {
+		press(KeyCode.CH_UP);
+		sleep(1000);
+	}
+	
+	public void pressChannelDown() {
+		press(KeyCode.CH_DOWN);
+		sleep(1000);
+	}
+	
+	public void pressVolUp() {
+		press(KeyEvent.KEYCODE_VOLUME_UP);
+		sleep(1000);
+	}
+	public void pressVolUp(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			press(KeyEvent.KEYCODE_VOLUME_UP);
+			sleep(1000);
+		}
+	}
+	
+	public void pressVolDown() {
+		press(KeyEvent.KEYCODE_VOLUME_DOWN);
+		sleep(1000);
+	}
+	public void pressVolDown(String counts) {
+		for (int i = 1; i <= Integer.parseInt(counts); i++)	{
+			press(KeyEvent.KEYCODE_VOLUME_DOWN);
+			sleep(1000);
+		}
+	}
+	
+	public void pressAssistBtn() {
+	}
+	
+	public void pressSourceBtn() {
+		press(KeyCode.SOURCE);
+		sleep(1000);
+	}
+
+	public void press(int KEY_CODE) {
+		getUiDevice.pressKeyCode(KEY_CODE);
+	}
+
+	public void press(int KEY_CODE, int time) {
+		getUiDevice.pressKeyCode(KEY_CODE, time);
+		sleep(time);
+	}
+
+	public void sleep(int time) {
+		try {
+			Thread.sleep(time);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// ---------------------------------------------对常用的方法进行二次封装，增加时间选项 end---------------------------------------------
+	
+	
+	/* =======================================================================================
+	 * 函数名：      inputText
+	 * 函数解释： 在文本框内输入字符
+	 * 参数：           id:文本框的id
+	 * 			 text:输入的内容
+	 * 作者：           李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */	
+	public void inputText(String id, String text) {
+		try {
+			new UiObject(new UiSelector().resourceId(id)).setText(text);
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("没有找到文本编辑框", e);
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：      getTextById
+	 * 函数解释： 根据id值获取组件的文本
+	 * 参数：           id -- 组件的id值
+	 * 作者：           李建飞
+	 * 返回值:   组件的text值
+	 * ======================================================================================= */	
+	public String getTextById(String id) {
+		String text = "";
+		try {
+			text = new UiObject(new UiSelector().resourceId(id)).getText();
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("没有在当前屏幕找到id:" + id, e);
+		}
+		return text;
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：      getSelectedText
+	 * 函数解释： 获取当前屏幕上被选中项的text值
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   text -- 当前被选中项的文本
+	 * ======================================================================================= */	
+	public String getSelectedText() {
+		String text = "";
+		try {
+			text = new UiObject(new UiSelector().selected(true)).getText();
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("当前选中项没有text属性", e);
+		}
+		return text;
+
+	}
+
+	
+	
+	/* =======================================================================================
+	 * 函数名：      getFocusedText
+	 * 函数解释： 获取当前屏幕上焦点组件的文本值
+	 * 参数：           无
+	 * 作者：           李建飞
+	 * 返回值:   text -- 当前焦点组件的文本
+	 * ======================================================================================= */	
+	public String getFocusedText() {
+		String text = "";
+		try {
+			text = new UiObject(new UiSelector().focused(true)).getText();
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("当前焦点项没有text属性", e);
+		}
+		return text;
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：      getObjectById
+	 * 函数解释： 根据id值获取对应的组件
+	 * 参数：           id：组件的id值
+	 * 作者：           李建飞
+	 * 返回值:   返回该UiObject
+	 * ======================================================================================= */	
+	public UiObject getObjectById(String id) {
+		AssertIdExists(id);
+		return new UiObject(new UiSelector().resourceId(id));
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：      getObjectByText
+	 * 函数解释： 根据text值获取对应的组件
+	 * 参数：           text：组件的text值
+	 * 作者：           李建飞
+	 * 返回值:   返回该UiObject
+	 * ======================================================================================= */	
+	public UiObject getObjectByText(String text) {
+		AssertTextExists(text);
+		return new UiObject(new UiSelector().text(text));
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：      getBroByText
+	 * 函数解释： 给定一个uiobject，判断他的兄弟里是否有text值为期望值的object
+	 * 参数：           uiobject:给定的uiobject
+	 * 			 text：期望兄弟组件里具有的text值
+	 * 作者：           李建飞
+	 * 返回值:   返回该UiObject
+	 * ======================================================================================= */	
+	public void getBroByText(UiObject uiobject, String text) {
+		boolean exist;
+		try {
+			exist = uiobject.getFromParent(new UiSelector().text(text)).exists();
+		} catch (UiObjectNotFoundException e) {
+			errorHandle("不存在对应的兄弟组件");
+		}
+	}
+	
+	
+	/*
+	 * 通过shell命令启动应用 参数说明： name:要启动的应用
+	 */
+	public void launchApp(String name) {
+		String packageName = "";
+		if (name == "appStore") {
+			packageName = "tv.fun.appstore/.ui.AppStoreActivity";
+		}
+		if (name == "appManager") {
+			packageName = "--ez management true tv.fun.appstore/.ui.AppStoreActivity";
+		}
+		String command = "am start ";
+		try {
+			Runtime.getRuntime().exec(command + packageName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// 按照字符串command指定的命令强制停止指定应用，如：am force-stop 命令
+	public void forceStopApp(String command) {
+		try {
+			Runtime.getRuntime().exec(command);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * 随机按某个键几次的函数。参数解释：times：随机按某个键的次数KEY_CODE：想要按的键的键值
+	 */
+	public void RandomPress(int times, int KEY_CODE) {
+		for (int i = 0; i <= (int) (Math.random() * times + 1); i++) {
+			getUiDevice.pressKeyCode(KEY_CODE);
+		}
+	}
+
+	/*
+	 * 循环多次按键参数解释：KEY_CODE：想要按的键的键值参数可选：UP、DOWN、LEFT、RIGHT、BACKtimes：按某个键的次数Add
+	 * by zhengcheng
+	 */
+	public void PressTimes(String KEY_CODE, int times) {
+		if (KEY_CODE == "UP") {
+			for (int i = 1; i <= times; i++) {
+				pressDPadUp(500);
+			}
+		} else if (KEY_CODE == "DOWN") {
+			for (int i = 1; i <= times; i++) {
+				pressDPadDown(500);
+			}
+		} else if (KEY_CODE == "LEFT") {
+			for (int i = 1; i <= times; i++) {
+				pressDPadLeft(500);
+			}
+		} else if (KEY_CODE == "RIGHT") {
+			for (int i = 1; i <= times; i++) {
+				pressDPadRight(500);
+			}
+		} else if (KEY_CODE == "BACK") {
+			for (int i = 1; i <= times; i++) {
+				pressBack(500);
+			}
+		}
+	}
+
+	// 在Launcher向下查找应用市场，只能在按Home键返回到Launcher的场景下进行
+	// Add by zhengcheng
+	public void searchAppMarket() {
+
+		AssertWatchExists("观看历史");
+
+		PressTimes("DOWN", 8);
+
+	}
+
+	/*
+	 * 向右查找app，将焦点移动到想要的文件上。如果未找到对应的文件名，则移动到最后一个文件上。参数解释：
+	 * resID：文件名对应的控件resourceIDappName：想要移动到的文件的名称Add by zhengcheng
+	 */
+	public void searchAppRight(String resID, String appName) {
+		try {
+			String searchName_new = "";
+			String searchName_old = "";
+
+			while (true) {
+
+				searchName_new = new UiObject(new UiSelector()
+						.resourceId(resID).selected(true)).getText();
+
+				if (searchName_new.equalsIgnoreCase(appName)) {
+					sleep(500);
+					break;
+				} else {
+					pressDPadRight();
+
+					sleep(500);
+
+					if (searchName_old.equalsIgnoreCase(searchName_new)) {
+						break;
+					} else {
+						searchName_old = searchName_new;
+					}
+				}
+			}
+		} catch (UiObjectNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * 向右移动焦点到最后一个文件，返回焦点所遍历的文件个数。参数解释：resID：文件名对应的控件resourceIDAdd by zhengcheng
+	 */
+	public int moveNum(String folder_resID,String list_resID) throws UiObjectNotFoundException{
+		
+		//String searchName_new = "";
+		//String searchName_old = "";
+		int searchName_new = 0;    
+		int moveNumber = 0;
+			
+		while(true){					
+				
+			UiObject app = new UiObject(new UiSelector().resourceId(folder_resID).selected(true));
+				
+			try {
+				searchName_new = Integer.parseInt(app.getText());
+				Log.d("liujia", "foldr_num is"+searchName_new);
+			} catch (UiObjectNotFoundException e) {
+			    // TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			//[modify by jia]
+			pressDPadCenter();;//try to enter the folder
+			sleep(1000);
+			String file_name_pre = "";
+			String file_name_next = "";
+			do {
+				file_name_pre = new UiObject(new UiSelector().resourceId(list_resID).selected(true)).getText();
+				Log.d("liujia", "file name :"+file_name_pre);
+				;
+				String[] list_pre=file_name_pre.split("\\.");
+				String file_format_pre = list_pre[1];
+				Log.d("liujia", "file_format_pre :"+file_format_pre);
+				pressDPadRight();
+				sleep(1000);
+				file_name_next = new UiObject(new UiSelector().resourceId(list_resID).selected(true)).getText();
+				Log.d("liujia", "file_name_next is"+file_name_next);
+				moveNumber++;
+				Log.d("liujia", String.valueOf(moveNumber));//int to string
+				String[] list_next = file_name_next.split("\\.");
+				String file_format_next = list_next[1];
+				Log.d("liujia", "file_format_next:"+file_format_next);
+				
+				Log.d("liujia", file_name_pre + "|" + file_name_next);
+				
+				Log.d("liujia", "xx" + file_name_next.equalsIgnoreCase(file_name_pre));
+				//int video_play_check = 0;
+				if(!file_format_next.equalsIgnoreCase(file_format_pre)){
+					pressDPadCenter();
+					sleep(4000);
+					pressDPadCenter();//suspend
+					sleep(2000);
+					boolean play_check = new UiObject(new UiSelector().resourceId("com.funshion.mediaplayer:id/title_txt")).exists();
+					if (play_check) {
+						System.out.println("case pass!video format can be play: "+ file_format_next);
+						Log.d("liujia", "case pass!video format can be play: "+ file_name_next);
+						//pressBack();
+						//sleep(500);
+						//Log.d("liujia", "first back");
+						//pressBack();
+						PressTimes("BACK", 2);
+						Log.d("liujia", "second back");
+						//return video_play_check;
+					} else {
+						Log.d("liujia", "case failed!this video format need to confirm: "+ file_format_next);
+						System.out.println("case failed!video play failed!,check the format");
+						
+
+					}
+				}
+			} while(!file_name_next.equalsIgnoreCase(file_name_pre));
+			Log.d("liujia", "movenumber2 :"+moveNumber);
+			if (moveNumber ==searchName_new ) {
+				Log.d("liujia", "the quantity for folder file is correct!");
+				System.out.println("the quantity for folder file is correct!");
+				return moveNumber;
+			} else {
+				Log.d("liujia", "the filenum is incorrect,check the video file num!");
+
+			}
+			//for zhengcheng:maybe there has some error in next code,please check!
+			/*
+			if(searchName_old.equalsIgnoreCase(searchName_new)){
+				break;
+			}
+			else{				
+				searchName_old = searchName_new;
+				moveNumber++;
+				System.out.println(searchName_new);
+				press(KEY_CODE_RIGHT);
+				sleep(500);
+			}
+			*/
+		}
+		//return moveNumber;	
+ }	
+
+	/*
+	 * 向右移动查找想要的控件，如果找到该控件，则停止移动，并返回True，否则移动到最后一个文件，并返回False参数解释：
+	 * resID：想要查找的控件的resourceIDAdd by zhengcheng
+	 */
+	public boolean checkImage(String resID_aim, String resID_filename) {
+
+		boolean iconExist = false;
+		String searchName_new = "";
+		String searchName_old = "";
+
+		while (true) {
+
+			try {
+				searchName_new = new UiObject(new UiSelector().resourceId(
+						resID_filename).selected(true)).getText();
+				System.out.println(searchName_new);
+			} catch (UiObjectNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (new UiObject(new UiSelector().resourceId(resID_aim).selected(
+					true)).exists()) {
+				iconExist = true;
+				sleep(500);
+				break;
+			} else {
+				pressDPadRight();
+
+				sleep(500);
+
+				if (searchName_old.equalsIgnoreCase(searchName_new)) {
+					break;
+				} else {
+					searchName_old = searchName_new;
+				}
+
+			}
+		}
+
+		return iconExist;
+
+	}
+
+	/*
+	 * 在当前页面查找某个字符串的函数，如果找到了str，返回true，否则返回false。参数解释：str：要在当前页面找的字符串
+	 */
+	public boolean checkText(String str) {
+		return new UiObject(new UiSelector().text(str)).exists();
+	}
+
+	/*
+	 * 在当前页面的所有Button上查找某个字符串str的函数，如果找到了str，返回true，否则返回false。参数解释：
+	 * str：要在当前页面所有Button上查找的字符串
+	 */
+	public boolean checkButtonText(String str) {
+		UiObject tmp = new UiObject(new UiSelector().text(str).className(
+				"android.widget.Button"));
+		if (tmp.exists()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/*
+	 * 检查当前页面的包名是否是packagename的函数，如果是packagename，则返回true，否则返回false参数解释：
+	 * packagename：要检查的包名
+	 */
+	public boolean checkPackageName(String packagename) {
+		return new UiObject(new UiSelector().packageName(packagename)).exists();
+	}
+
+	/*
+	 * 点击指定resourceId的控件。如果控件未找到，断言失败参数解释：id：要点击空间的resourceId
+	 */
+	public void clickById(String id) {
+		UiObject tmp = new UiObject(new UiSelector().resourceId(id));
+		try {
+			tmp.click();
+		} catch (UiObjectNotFoundException e) {
+			writeBug("Can not find resource ID!");
+			assertTrue("Can not find resource ID!", false);
+			e.printStackTrace();
+		}
+
+	}
+
+	/*
+	 * 点击指定了resourceId和text的控件。如果控件未找到，断言失败参数解释：id：要点击空间的resourceIdtext：控件上包含的文字
+	 */
+	public void clickById(String id, String text) {
+		UiObject tmp = new UiObject(new UiSelector().resourceId(id).text(text));
+		try {
+			tmp.click();
+		} catch (UiObjectNotFoundException e) {
+			writeBug("Can not find resource ID or text!");
+			assertTrue("Can not find resource ID or text!", false);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * 判断当前页面是否包含字符串str的函数，如果包含，返回true，否则返回false参数解释：str：指定要查找的字符串片段
+	 */
+	public boolean checkTextContains(String str) {
+		UiObject tmp = new UiObject(new UiSelector().textContains(str));
+		if (tmp.exists()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
+	/*
+	 * 按照某个方向遍历一定次数，查找某个应用名字的函数，如果找到了应用名，则光标停止在刚刚移动到的位置，如果指定次数内未找到应用名，则断言失败参数解释：
+	 * presstimes：指定遍历的次数KEY_CODE：指定方向键的键值AppName：指定要查找的应用名称
+	 */
+	public void SearchAppName(int presstimes, int KEY_CODE, String AppName) {
+		boolean flag = false;
+		for (int i = 0; i <= presstimes; i++) {
+			getUiDevice.pressKeyCode(KEY_CODE);
+			sleep(1000);
+			if (checkText(AppName)) {
+				flag = true;
+				break;
+			}
+		}
+		if (flag) {
+			sleep(2000);
+			System.out.println(AppName + "已经找到");
+		} else {
+			System.out.println(AppName + "未找到");
+			writeBug("未找到" + AppName);
+			assertTrue("未找到" + AppName, flag);
+		}
+	}
+
+	/*
+	 * 按照某个方向遍历一定次数，判断某个应用名字是否存在的函数，如果找到了应用名，则遍历停止，并返回true。
+	 * 如果指定遍历次数内未找到应用名，则返回false，参数解释：presstimes：指定遍历的次数KEY_CODE：指定方向键的键值
+	 * AppName：指定要查找的应用名称
+	 */
+	public boolean AppNameIsExists(int presstimes, int KEY_CODE, String AppName) {
+		for (int i = 0; i <= presstimes; i++) {
+			getUiDevice.pressKeyCode(KEY_CODE);
+			sleep(1000);
+			if (checkText(AppName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
+
+	/*
+	 * 根据指定的resourceId找到控件并返回控件上的文字的函数参数解释：resourceId：要找到某控件的resourceId
+	 */
+	public String getAppName(String resourceId) {
+		UiObject tmp = new UiObject(new UiSelector().resourceId(resourceId));
+		try {
+			String str = null;
+			str = (String) tmp.getText();
+			return str;
+		} catch (UiObjectNotFoundException e) {
+			writeBug("未找到App的Name");
+			assertTrue("未找到App的Name", false);
+			return null;
+		}
+	}
+
+	/*
+	 * 根据指定的resourceId和selected属性找到控件并返回控件上的文字的函数参数解释：
+	 * resourceId：要找到某控件的resourceIdselectedflag：该控件的selected属性的状态，true或者false
+	 */
+	public String getAppName(String resourceId, boolean selectedflag) {
+		UiObject tmp = new UiObject(new UiSelector().resourceId(resourceId)
+				.selected(selectedflag));
+		sleep(1000);
+		try {
+			String str = null;
+			str = (String) tmp.getText();
+			sleep(1000);
+			return str;
+		} catch (UiObjectNotFoundException e) {
+			writeBug("未找到App的Name");
+			assertTrue("未找到App的Name", false);
+			return null;
+		}
+	}
+
+	public void writeBug(String message) {
+//		String screenFile = "data/local/tmp/" + OriginTestCase.TestCaseName
+//				+ "_" + getTimeStamp() + ".png";
+//		screenCap(screenFile);
+		String bugfilePath = "data/local/tmp/bugreport.txt";
+		String beginLine = "***************************************";
+		String testName = "TestCase Name is : " + OriginTestCase.TestCaseName;
+		String reportTime = "Time is : " + getTimeStamp("hour");
+		String logcatPath = "Path of Logcat.log is : " + "data/local/tmp/"  + OriginTestCase.caseModle + "/"
+				+ OriginTestCase.TestCaseName;
+//		String screencapPath = "File of Screencap is : " + screenFile;
+		String bugDetail = "Bug detail is :" + message;
+		fileChaseFOS(bugfilePath, beginLine);
+		fileChaseFOS(bugfilePath, reportTime);
+		fileChaseFOS(bugfilePath, testName);
+		fileChaseFOS(bugfilePath, logcatPath);
+//		fileChaseFOS(bugfilePath, screencapPath);
+		fileChaseFOS(bugfilePath, bugDetail);
+		// 等待截图函数运行结束
+		sleep(5000);
+	}
+
+	public void fileChaseFOS(String filePath, String content) {
+		FileOutputStream fos = null;
+		OutputStreamWriter osw = null;
+		File BugFile = new File(filePath);
+		if (!BugFile.exists()) {
+			try {
+				BugFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			// 构造函数中的第二个参数true表示以追加形式写文件
+			fos = new FileOutputStream(BugFile, true);
+			osw = new OutputStreamWriter(fos,"utf-8");
+			osw.write(content + System.getProperty("line.separator"));
+		} catch (IOException e) {
+			System.err.println("写入文件" + filePath + "失败！" + e.getMessage());
+		} finally {
+
+			try {
+				if (osw != null)
+					osw.close();
+				if (fos != null)
+					fos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void screenCap(String filePath) {
+		try {
+			Runtime.getRuntime().exec("screencap " + filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public void screenCap() {
+		String fileName = getTimeStamp() + ".png";
+		try {
+			Runtime.getRuntime().exec("screencap " + OriginTestCase.logDir + fileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		sleep(5000);
+		tool.writeLog("screen file:" + fileName);
+	}
+
+	public static String getTimeStamp() {
+		Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("HH-mm-ss");
+		String timestamp = sdf.format(date);
+		return timestamp;
+	}
+	
+	
+	public static String getTimeStamp(String format) {
+		Date date = new Date();
+		DateFormat sdf = null;
+		if (format.equalsIgnoreCase("year")){
+			
+		} else if (format.equalsIgnoreCase("month")){
+			
+		} else if (format.equalsIgnoreCase("day")){
+			sdf = new SimpleDateFormat("yyyy-MM-dd");
+		} else if (format.equalsIgnoreCase("hour")){
+			sdf = new SimpleDateFormat("yyyy-MM-dd__HH-mm-ss");
+		}
+		String timestamp = sdf.format(date);
+		return timestamp;
+	}
+
+	
+	public void do_exec(String sh){
+		try {
+			Runtime.getRuntime().exec(sh);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+     
+	public String exec(String cmd){
+		System.out.println("[Framework]:exec Enter");
+		StringBuffer s = new StringBuffer("");
+		try {
+			Process p = Runtime.getRuntime().exec(cmd);
+			BufferedInputStream  in = new BufferedInputStream(p.getInputStream());
+			BufferedReader br = new BufferedReader(new InputStreamReader(in)); 
+			String line;
+			while ((line = br.readLine()) != null)
+				s.append(line + "\n");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("[Framework]:exec Exit");
+		return s.toString();
+	}
+	
+	public String exec(String[] cmd){
+		System.out.println("[Framework]:exec Enter");
+		StringBuffer s = new StringBuffer("");
+		try {
+			Process p = Runtime.getRuntime().exec(cmd);
+			BufferedInputStream  in = new BufferedInputStream(p.getInputStream());
+			BufferedReader br = new BufferedReader(new InputStreamReader(in)); 
+			String line;
+			while ((line = br.readLine()) != null)
+				s.append(line + "\n");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("[Framework]:exec Exit");
+		return s.toString();
+	}
+	
+	/*
+	 * 获取当前平台类型：338/638/938
+	 * 函数名：getPlatform()
+	 * 返回值：string，平台编号
+	 * 注意：938是没有model值的，没有厂商分类，所以暂时通过判断平台来筛选是否是938的机器，不同厂商以及平台的机器，
+	 * 遥控器的键值是不同的
+	 */
+	public String getPlatform() {
+		String platform = "";
+		String cmd = "getprop |grep persist.sys.chiptype";
+		BufferedReader reader = null;
+		String log = "";
+		
+		try {
+			Process execCmd = Runtime.getRuntime().exec(cmd);
+			execCmd.waitFor();
+			InputStream input = execCmd.getInputStream();
+			reader = new BufferedReader(new InputStreamReader(input));
+			while ((log = reader.readLine()) != null) {
+				Log.d("liujia", "log :"+log);
+				String regex = ".*persist.sys.chiptype.*\\:.*\\[\\d+\\].*";//\\:\\s*\\[\\d+\\].*$
+				Pattern result = Pattern.compile(regex);
+				Matcher a = result.matcher(log);
+				boolean matchResult = false;
+				if(matchResult = a.matches()) {
+					Log.d("liujia", "enter if:"+log);
+					int c = a.groupCount();
+					Log.d("liujia", "groupCount is :"+Integer.toString(c));
+					platform = a.group(1);
+					//platform = a.group(c-1);
+					Log.d("liujia", "platform :"+platform + "platform2:"+a.group(c-1));
+					}
+			}
+			
+		
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			// TODO: handle exception
+		}
+		return platform;
+	}
+	
+	/*获取电视的型号
+	 * 938没有product.model参数
+	 * getprop |grep persist.sys.chiptype 得到下列值，需要先判断是638还是938，938是没有model的
+	 * [persist.sys.chiptype]: [938]
+	 */
+	public String getModel(){
+		File file = new File("/system/build.prop");
+    	BufferedReader reader = null;
+    	String model = "";
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            String tempString = null;
+            while ((tempString = reader.readLine()) != null) {
+                if (tempString.contains("product.model")){
+                	model = tempString.substring(tempString.indexOf("=") + 1);
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                }
+            }
+        }
+        return model;
+	}
+	
+	/*获取电视的品牌
+	 * @ Author hewei1
+	 */
+	public String getBrand(){
+    	String Brand = getModel();
+		
+		if (Brand.startsWith("FD"))
+		{
+			//风行
+			Brand = "Fun";
+		}
+		else if (Brand.startsWith("L"))
+		{
+			Brand = "Haier";
+		}
+		else if (Brand.contains("CE"))
+		{
+			Brand = "Sanyo";
+		}
+		else if (Brand.startsWith("TD"))
+		{
+			Brand = "TCL";
+		}
+		else if (Brand.startsWith("PD"))
+		{
+			Brand = "Panda";
+		}
+		else if(Brand.startsWith("G"))
+		{
+			//国美风行
+			Brand = "G";
+		}
+		
+        return Brand;
+	}
+	
+	/*
+	 * 获取默认遥控器类型
+	 * 
+	 * @ Author hewei1
+	 */
+	public String getType(){
+    	String getType = getModel();
+    	System.out.println( getType+ " \n");
+    	String Type = null;
+
+    	if (getType.equals("G65Y"))
+    		Type = "BT";
+    	else if (getType.equals("FD4351A-LU"))
+			Type = "BT";
+    	else if (getType.equals("FD4951A-LU"))
+			Type = "BT";
+    	else if (getType.equals("FD5551A-SU"))
+			Type = "BT";
+    	else if (getType.equals("FD4951A-SU"))
+			Type = "BT";
+    	else if (getType.equals("FD5551A-LU"))
+			Type = "BT";
+    	else if (getType.equals("FD4251A-CF"))
+			Type = "BT";
+    	else if (getType.equals("FD6551A-SU"))
+			Type = "BT";
+		else
+			Type = "IR";
+		
+		System.out.println("Type is "+ Type + "\n");
+        return Type;
+	}
+	
+	public String pic_diff(String origin_path,String screenshot_path) throws IOException, InterruptedException {
+		String cmd = "busybox diff " + origin_path + " " + screenshot_path;
+		Log.d("liujia", "cmd :" + cmd);
+		Process compare = Runtime.getRuntime().exec(cmd);
+		//int code = compare.exitValue();//can not use .exitValue() to judge if the exec is executed!!why?
+		StringBuilder result = new StringBuilder();
+		String line1 = null;
+		String result1 = "";
+		try {
+			InputStream compare_input = compare.getInputStream();
+			BufferedReader reader1 = new BufferedReader(new InputStreamReader(compare_input));
+			while ((line1 = reader1.readLine()) != null) {
+				Log.i("liujia","line1 = " + line1);
+				result.append(line1 + "\n");
+				
+			}
+			Log.d("liujia", "!!compare result :" + result.toString());
+			result1 = result1 + result.toString();
+			Log.d("liujia", "!!String resutl1:" + result1);
+		} catch (Exception e) {
+			Log.d("liujia", "fail to compare file!case failed!");
+			Log.e("liujia", "fail to compare file!case failed!");
+			// TODO: handle exception
+		} finally {
+			compare.waitFor();
+			
+		}
+		return result1;
+		
+	}
+	
+	//add by liujia
+	public boolean compile_matcher(String compile_rule,String matcher_object){
+		Pattern check = Pattern.compile(compile_rule);
+		Matcher check_m = check.matcher(matcher_object);
+		boolean b_result = check_m.matches();
+		return b_result;
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：     killApp
+	 * 函数解释：使用命令杀死应用
+	 * 参数：           packageName:应用名称 -- appStore,settings
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void killApp(String packageName) {
+		String execStr = "am force-stop ";
+		if (packageName.equalsIgnoreCase("appStore")){
+			execStr = execStr + OriginTestCase.AppStoreConst.text.packageName;
+		} else if (packageName.equalsIgnoreCase("settings")){
+			execStr = execStr + OriginTestCase.SettingsConst.text.packageName;
+		}
+		exec(execStr);
+	}
+	
+	/*======================================================
+	 * 函数名：killOneApp(String packageName)
+	 * 函数解释：通过输入任意app的简称，找到对应app的包名，然后kill掉，一般用在用例的刚开始，用来初始化某个app
+	 * 参数：packageName:app的简称，当前已添加：appStore,settings,filemanager,signalResource,TVAssist
+	 * 作者：刘佳
+	 * 返回值：
+	 */
+	public void killOneApp(String packageName) {
+		String prefix = "am force-stop ";
+		switch (packageName) {
+		case "appStore":
+			prefix = prefix + OriginTestCase.AppStoreConst.text.packageName;
+			break;
+		case "settings":
+			prefix = prefix + OriginTestCase.SettingsConst.text.packageName;
+			break;
+		case "filemanager":
+			prefix = prefix + OriginTestCase.FileManagerConst.text.packageName;
+			break;
+		case "signalResource":
+			prefix = prefix + OriginTestCase.Signal_Const.text.packageName;
+			break;
+		case "TVAssist":
+			prefix = prefix + OriginTestCase.TVAssistConst.packageName;
+			break;
+
+		default:
+			break;
+		}
+		exec(prefix);
+		
+	}
+	
+	
+	
+	/* =======================================================================================
+	 * 函数名：     normalLogRecord
+	 * 函数解释：语句执行成功之后的log写入
+	 * 参数：           fileName:当前屏幕截图存放的文件名
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void normalLogRecord() {
+		String fileName = getTimeStamp() + ".png";
+		//screenCap(OriginTestCase.logDir + fileName);
+		tool.writeLog("语句执行成功，截图文件：" + fileName);
+
+	}
+	
+	/* =======================================================================================
+	 * 函数名：     errorHandle
+	 * 函数解释：脚本运行异常时相关的处理步骤
+	 * 参数：           message:错误提示信息
+	 *			 e:出错时的堆栈信息
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void errorHandle(String message, Exception e) {
+		String fileName = getTimeStamp() + ".png";
+		screenCap(OriginTestCase.logDir + fileName);
+		writeBug(message);
+		tool.writeLog(message);
+		tool.writeLog("error screen file:" + fileName);
+		StringWriter sw = new StringWriter();  
+        PrintWriter pw = new PrintWriter(sw);  
+        e.printStackTrace(pw); 
+		tool.writeLog(sw.toString());
+		//assertTrue(message, false);
+	}
+	
+	
+	/* =======================================================================================
+	 * 函数名：     errorHandle
+	 * 函数解释：脚本运行异常时相关的处理步骤
+	 * 参数：           message:错误提示信息
+	 * 作者：          李建飞
+	 * 返回值:   无
+	 * ======================================================================================= */
+	public void errorHandle(String message) {
+		String fileName = getTimeStamp() + ".png";
+		screenCap(OriginTestCase.logDir + fileName);
+		System.out.println(OriginTestCase.logDir + fileName);
+		writeBug(message);
+		tool.writeLog(message);
+		tool.writeLog("error screen file:" + fileName);
+		assertTrue(message, false);
+	}
+	
+	/*======================================================================
+	 * 函数名：compileLog
+	 * 函数解释：用于对logcat中的打印进行匹配，匹配到与正则条件相同的那一行log，并输出，以便后续对这一行内容的再次内容提取
+	 * 参数：compileCondition,cmd
+	 * 作者：刘佳
+	 * 返回值：string匹配的那一行log中
+	 * 
+	 */
+	public String compileLog(String compileCondition,String cmd) throws IOException, InterruptedException {
+		Log.d("liujia", "compileCondition is :" + compileCondition);
+		Log.d("liujia","exec cmd is:"+cmd);
+		String logContent = "nothing compiled!";
+		Process exec = Runtime.getRuntime().exec(cmd);
+		try {
+			InputStream execOutput = exec.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(execOutput));
+			String logLine = "";
+			while ((logLine = reader.readLine()) != null) {
+				Pattern compile = Pattern.compile(compileCondition);
+				Matcher match = compile.matcher(logLine);
+				if (match.matches()) {
+					Log.d("liujia", "log compile successful");
+					Log.d("liujia", logLine);
+					int count =0;
+					count = match.groupCount();
+					Log.d("liujia", "count= "+Integer.toString(count));
+					logContent = match.group(1);
+					break;
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			// TODO: handle exception
+		}
+		return logContent;
+	}
+
+}	
